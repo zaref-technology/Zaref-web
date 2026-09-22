@@ -16,6 +16,7 @@ import {
   Moon,
   Layers,
   Quote,
+  Settings,
 } from 'lucide-react';
 
 const navItems = [
@@ -24,6 +25,7 @@ const navItems = [
   { href: '/admin/services',     label: 'Services',     Icon: Layers          },
   { href: '/admin/testimonials', label: 'Testimonials', Icon: Quote           },
   { href: '/admin/messages',     label: 'Messages',     Icon: MessageSquare   },
+  { href: '/admin/settings',     label: 'Site Settings',Icon: Settings        },
 ];
 
 interface AdminSidebarProps {

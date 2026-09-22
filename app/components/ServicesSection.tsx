@@ -18,7 +18,7 @@ interface Service {
 
 export default function ServicesSection() {
   const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading]   = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchServices() {
@@ -147,16 +147,7 @@ export default function ServicesSection() {
           </div>
         )}
 
-        {/* Mobile "View All" link below cards */}
-        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-          <Link
-            href="/services"
-            className="btn-primary"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
-          >
-            View All Services <ArrowRight size={15} />
-          </Link>
-        </div>
+
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Globe, GitFork, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -194,13 +195,13 @@ export default function Portfolio() {
 
           {/* Grid */}
           {loading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', paddingBottom: '5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', padding: '0 0 5rem' }}>
               {[1,2,3,4,5,6].map(i => (
                 <div key={i} className="card" style={{ height: '340px', animation: 'pulse 1.5s ease-in-out infinite', padding: 0, overflow: 'hidden' }} />
               ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '5rem 1rem', paddingBottom: '5rem' }}>
+            <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
               <h2 style={{ fontWeight: 700, color: 'var(--foreground)', marginBottom: '0.5rem' }}>
                 {projects.length === 0 ? 'No projects yet' : 'No projects in this category'}
               </h2>
@@ -209,63 +210,71 @@ export default function Portfolio() {
               </p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', paddingBottom: '5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem', padding: '0 0 5rem' }}>
               {filtered.map(proj => (
                 <article
                   key={proj.id}
                   className="card"
-                  style={{ cursor: 'pointer', overflow: 'hidden', padding: 0 }}
+                  style={{ overflow: 'hidden', padding: 0, height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s, box-shadow 0.2s' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
                 >
-                  {/* Image carousel / fallback thumbnail */}
-                  <ProjectThumbnail project={proj} />
+                  <Link
+                    href={`/portfolio/${proj.id}`}
+                    style={{ textDecoration: 'none', color: 'inherit', display: 'block', flex: 1 }}
+                  >
+                    {/* Image carousel / fallback thumbnail */}
+                    <ProjectThumbnail project={proj} />
 
-                  {/* Meta */}
-                  <div style={{ padding: '1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{
-                          display: 'inline-block', padding: '0.2rem 0.7rem',
-                          background: `${proj.color}18`, color: proj.color,
-                          borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600,
-                          marginBottom: '0.5rem',
-                        }}>
-                          {proj.category}
-                        </span>
-                        <h3 style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--foreground)', marginBottom: '0.25rem' }}>
-                          {proj.title}
-                        </h3>
-                        <p style={{ color: 'var(--muted)', fontSize: '0.825rem', marginBottom: '0.4rem' }}>{proj.tags}</p>
-                        {proj.description && (
-                          <p style={{
-                            color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.6,
-                            display: '-webkit-box', WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                            marginBottom: '0.75rem',
+                    {/* Meta */}
+                    <div style={{ padding: '1.25rem 1.25rem 0.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{
+                            display: 'inline-block', padding: '0.2rem 0.7rem',
+                            background: `${proj.color}18`, color: proj.color,
+                            borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600,
+                            marginBottom: '0.5rem',
                           }}>
-                            {proj.description}
-                          </p>
-                        )}
-                        {/* Links */}
-                        {(proj.projectUrl || proj.githubUrl) && (
-                          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                            {proj.projectUrl && (
-                              <a href={proj.projectUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '0.8rem', color: 'var(--primary-light)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <Globe size={12} /> Live Demo
-                              </a>
-                            )}
-                            {proj.githubUrl && (
-                              <a href={proj.githubUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: '0.8rem', color: 'var(--muted)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                <GitFork size={12} /> GitHub
-                              </a>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ color: 'var(--primary-light)', flexShrink: 0, marginTop: '0.25rem' }}>
-                        <ExternalLink size={16} />
+                            {proj.category}
+                          </span>
+                          <h3 style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--foreground)', marginBottom: '0.25rem' }}>
+                            {proj.title}
+                          </h3>
+                          <p style={{ color: 'var(--muted)', fontSize: '0.825rem', marginBottom: '0.4rem' }}>{proj.tags}</p>
+                          {proj.description && (
+                            <p style={{
+                              color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.6,
+                              display: '-webkit-box', WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                              marginBottom: '0.5rem',
+                            }}>
+                              {proj.description}
+                            </p>
+                          )}
+                        </div>
+                        <div style={{ color: 'var(--primary-light)', flexShrink: 0, marginTop: '0.25rem' }}>
+                          <ExternalLink size={16} />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
+
+                  {/* External Links outside main Link */}
+                  {(proj.projectUrl || proj.githubUrl) && (
+                    <div style={{ padding: '0 1.25rem 1.25rem', marginTop: 'auto', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                      {proj.projectUrl && (
+                        <a href={proj.projectUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: 'var(--primary-light)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <Globe size={12} /> Live Demo
+                        </a>
+                      )}
+                      {proj.githubUrl && (
+                        <a href={proj.githubUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: 'var(--muted)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <GitFork size={12} /> GitHub
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </article>
               ))}
             </div>

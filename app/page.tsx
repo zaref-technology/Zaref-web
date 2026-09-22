@@ -1,5 +1,6 @@
 import Hero from './components/Hero';
 import ServicesSection from './components/ServicesSection';
+import ProjectsSection from './components/ProjectsSection';
 import TestimonialsSection from './components/TestimonialsSection';
 
 const stats = [
@@ -30,6 +31,9 @@ export default function Home() {
 
       {/* Services — live from Firestore, 4 cards, horizontal scroll on mobile */}
       <ServicesSection />
+
+      {/* Projects — live from Firestore, 4 cards, horizontal scroll on mobile */}
+      <ProjectsSection />
 
       {/* Testimonials — live from Firestore, 4 cards, horizontal scroll on mobile */}
       <TestimonialsSection />

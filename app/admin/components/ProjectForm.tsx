@@ -20,6 +20,9 @@ export interface ProjectData {
   color: string;
   projectUrl: string;
   githubUrl: string;
+  youtubeUrl: string;
+  appStoreUrl: string;
+  playStoreUrl: string;
   images: string[];
 }
 
@@ -46,14 +49,17 @@ export default function ProjectForm({ initialData, mode }: ProjectFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<ProjectData>({
-    title:       initialData?.title       ?? '',
-    category:    initialData?.category    ?? 'Web App',
-    tags:        initialData?.tags        ?? '',
-    description: initialData?.description ?? '',
-    color:       initialData?.color       ?? '#2563eb',
-    projectUrl:  initialData?.projectUrl  ?? '',
-    githubUrl:   initialData?.githubUrl   ?? '',
-    images:      initialData?.images      ?? [],
+    title:        initialData?.title        ?? '',
+    category:     initialData?.category     ?? 'Web App',
+    tags:         initialData?.tags         ?? '',
+    description:  initialData?.description  ?? '',
+    color:        initialData?.color        ?? '#2563eb',
+    projectUrl:   initialData?.projectUrl   ?? '',
+    githubUrl:    initialData?.githubUrl    ?? '',
+    youtubeUrl:   initialData?.youtubeUrl   ?? '',
+    appStoreUrl:  initialData?.appStoreUrl  ?? '',
+    playStoreUrl: initialData?.playStoreUrl ?? '',
+    images:       initialData?.images       ?? [],
   });
 
   const [uploading, setUploading]     = useState(false);
@@ -224,6 +230,32 @@ export default function ProjectForm({ initialData, mode }: ProjectFormProps) {
         <div>
           <label style={labelStyle}>GitHub URL</label>
           <input value={form.githubUrl} onChange={set('githubUrl')} placeholder="https://github.com/..." style={inputStyle} />
+        </div>
+      </div>
+
+      {/* Optional media / store links */}
+      <div style={{ padding: '1.25rem', background: 'var(--surface-2)', border: '1.5px solid var(--border)', borderRadius: '0.85rem' }}>
+        <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--foreground)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '1rem' }}>Optional Links</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={labelStyle}>YouTube Video URL</label>
+            <input
+              value={form.youtubeUrl}
+              onChange={set('youtubeUrl')}
+              placeholder="https://youtube.com/watch?v=... or youtu.be/..."
+              style={inputStyle}
+            />
+          </div>
+          <div className="admin-form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label style={labelStyle}>App Store URL</label>
+              <input value={form.appStoreUrl} onChange={set('appStoreUrl')} placeholder="https://apps.apple.com/..." style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Play Store URL</label>
+              <input value={form.playStoreUrl} onChange={set('playStoreUrl')} placeholder="https://play.google.com/..." style={inputStyle} />
+            </div>
+          </div>
         </div>
       </div>
 

@@ -29,7 +29,7 @@ const GRADIENTS = [
 
 export default function TestimonialsSection() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [loading, setLoading]           = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchTestimonials() {
@@ -111,7 +111,7 @@ export default function TestimonialsSection() {
         {/* Cards */}
         {loading ? (
           <div className="testimonials-scroll-row">
-            {[1,2,3,4].map(i => (
+            {[1, 2, 3, 4].map(i => (
               <div key={i} className="testimonial-card-wrap">
                 <div className="card" style={{ height: '220px', animation: 'pulse 1.5s ease-in-out infinite' }} />
               </div>
@@ -132,7 +132,7 @@ export default function TestimonialsSection() {
 
                   {/* Stars */}
                   <div style={{ display: 'flex', gap: '3px', marginBottom: '1rem' }}>
-                    {[1,2,3,4,5].map(i => (
+                    {[1, 2, 3, 4, 5].map(i => (
                       <Star key={i} size={14} fill={i <= t.rating ? '#f59e0b' : 'none'} color={i <= t.rating ? '#f59e0b' : 'var(--border)'} />
                     ))}
                   </div>
@@ -173,16 +173,7 @@ export default function TestimonialsSection() {
           </div>
         )}
 
-        {/* CTA below */}
-        <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-          <Link
-            href="/testimonials"
-            className="btn-primary"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}
-          >
-            Read All Testimonials <ArrowRight size={15} />
-          </Link>
-        </div>
+
       </div>
     </section>
   );
