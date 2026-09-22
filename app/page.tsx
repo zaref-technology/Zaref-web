@@ -1,43 +1,12 @@
 import Hero from './components/Hero';
+import ServicesSection from './components/ServicesSection';
+import TestimonialsSection from './components/TestimonialsSection';
 
 const stats = [
   { value: '50+', label: 'Projects Delivered' },
   { value: '3+',  label: 'Years Experience'   },
   { value: '99%', label: 'Client Satisfaction' },
   { value: '24h', label: 'Response Time'       },
-];
-
-const services = [
-  {
-    icon: '🎨',
-    title: 'UI/UX Design',
-    desc: 'Pixel-perfect interfaces with intuitive user experiences that delight and convert.',
-  },
-  {
-    icon: '⚡',
-    title: 'Web Development',
-    desc: 'Blazing-fast, scalable web apps built with modern frameworks and best practices.',
-  },
-  {
-    icon: '📱',
-    title: 'Responsive Design',
-    desc: 'Flawlessly adaptive layouts that look stunning on every device and screen size.',
-  },
-  {
-    icon: '🚀',
-    title: 'Performance',
-    desc: 'Optimized code and assets delivering sub-second load times and smooth interactions.',
-  },
-  {
-    icon: '🔒',
-    title: 'Security',
-    desc: 'Enterprise-grade security standards built into every layer of your application.',
-  },
-  {
-    icon: '🛠️',
-    title: 'Maintenance',
-    desc: 'Ongoing support, updates, and iterative improvements to keep your site running smoothly.',
-  },
 ];
 
 export default function Home() {
@@ -59,28 +28,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Services */}
-      <section className="section">
-        <div className="container">
-          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <div className="badge" style={{ margin: '0 auto 1rem' }}>What I Do</div>
-            <h2 className="section-title">Services I Offer</h2>
-            <p className="section-subtitle" style={{ margin: '0 auto' }}>
-              End-to-end solutions tailored to your goals — from concept to launch.
-            </p>
-          </div>
+      {/* Services — live from Firestore, 4 cards, horizontal scroll on mobile */}
+      <ServicesSection />
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-            {services.map(s => (
-              <div key={s.title} className="card">
-                <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>{s.icon}</div>
-                <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--foreground)', marginBottom: '0.5rem' }}>{s.title}</h3>
-                <p style={{ fontSize: '0.925rem', color: 'var(--muted)', lineHeight: 1.7 }}>{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Testimonials — live from Firestore, 4 cards, horizontal scroll on mobile */}
+      <TestimonialsSection />
 
       {/* CTA Banner */}
       <section style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '5rem 0' }}>
@@ -90,7 +42,7 @@ export default function Home() {
             <span style={{ color: 'var(--primary-light)' }}>amazing?</span>
           </h2>
           <p style={{ color: 'var(--muted)', marginBottom: '2rem', fontSize: '1.05rem' }}>
-            Let's turn your idea into a stunning digital product.
+            Let&apos;s turn your idea into a stunning digital product.
           </p>
           <a href="/contact" className="btn-primary" style={{ display: 'inline-flex' }}>
             Start a Project

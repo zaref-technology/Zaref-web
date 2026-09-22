@@ -97,7 +97,7 @@ export default function Hero() {
             lineHeight: 1.7,
           }}
         >
-          A creative developer crafting modern, performant, and beautiful web applications that leave a lasting impression.
+          A creative agency crafting modern, performant, and beautiful web applications that leave a lasting impression.
         </p>
 
         {/* CTA Buttons */}

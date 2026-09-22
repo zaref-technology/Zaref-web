@@ -73,7 +73,7 @@ export default function Contact() {
           <div className="badge" style={{ margin: '0 auto 1rem' }}>Contact</div>
           <h1 className="section-title" style={{ margin: '0 auto 1rem' }}>Let&apos;s Work Together</h1>
           <p className="section-subtitle" style={{ margin: '0 auto' }}>
-            Have a project in mind? I&apos;d love to hear about it. Let&apos;s create something great.
+            Have a project in mind? We&apos;d love to hear about it. Let&apos;s create something great.
           </p>
         </div>
       </section>
@@ -87,7 +87,7 @@ export default function Contact() {
             <div>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--foreground)', marginBottom: '0.75rem' }}>Get in Touch</h2>
               <p style={{ color: 'var(--muted)', lineHeight: 1.8, marginBottom: '2rem' }}>
-                Whether you have a project idea, a question, or just want to say hi — my inbox is always open.
+                Whether you have a project idea, a question, or just want to say hello — our inbox is always open.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {contactInfo.map(info => (
@@ -117,7 +117,7 @@ export default function Contact() {
                 }}>
                   <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🎉</div>
                   <h3 style={{ fontWeight: 800, color: 'var(--foreground)', marginBottom: '0.5rem' }}>Message Sent!</h3>
-                  <p style={{ color: 'var(--muted)', marginBottom: '1.5rem' }}>Thanks for reaching out. I&apos;ll get back to you as soon as possible.</p>
+                  <p style={{ color: 'var(--muted)', marginBottom: '1.5rem' }}>Thanks for reaching out. We&apos;ll get back to you as soon as possible.</p>
                   <button
                     onClick={() => setState('idle')}
                     className="btn-outline"
@@ -154,7 +154,7 @@ export default function Contact() {
                       rows={5}
                       value={form.message}
                       onChange={set('message')}
-                      placeholder="Tell me about your project..."
+                      placeholder="Tell us about your project..."
                       style={{ ...inputStyle, resize: 'vertical' }}
                     />
                   </div>

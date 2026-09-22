@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'About — Zaref',
-  description: 'Learn more about Zaref — the person behind the pixels.',
+  description: 'Learn more about Zaref — the team behind the pixels.',
 };
 
 const skills = [
@@ -35,10 +35,10 @@ export default function About() {
       >
         <div className="glow-blob" style={{ width: '500px', height: '500px', background: 'var(--primary)', top: '-200px', right: '-100px' }} />
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="badge">About Me</div>
-          <h1 className="section-title">The Person Behind<br />the Pixels</h1>
+          <div className="badge">About Us</div>
+          <h1 className="section-title">The Team Behind<br />the Pixels</h1>
           <p className="section-subtitle">
-            A passionate developer and designer who believes great software is born at the intersection of logic and creativity.
+            A passionate agency of developers and designers who believe great software is born at the intersection of logic and creativity.
           </p>
         </div>
       </section>
@@ -72,16 +72,16 @@ export default function About() {
 
             {/* Bio */}
             <div>
-              <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--foreground)' }}>Hi, I&apos;m Zaref 👋</h2>
+              <h2 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--foreground)' }}>Hi, We&apos;re Zaref</h2>
               <p style={{ color: 'var(--muted)', lineHeight: 1.8, marginBottom: '1rem' }}>
-                I&apos;m a creative developer with a passion for building beautiful, performant, and accessible web experiences. I specialize in modern JavaScript frameworks and love the craft of turning complex problems into elegant solutions.
+                We are a creative team with a passion for building beautiful, performant, and accessible web experiences. We specialise in modern JavaScript frameworks and love the craft of turning complex problems into elegant solutions.
               </p>
               <p style={{ color: 'var(--muted)', lineHeight: 1.8, marginBottom: '2rem' }}>
-                When I&apos;m not coding, you&apos;ll find me exploring new design trends, contributing to open source, or sipping coffee while sketching the next big idea.
+                When we&apos;re not coding, you&apos;ll find us exploring new design trends, contributing to open source, or sketching the next big idea.
               </p>
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 <a href="/portfolio" className="btn-primary">View Portfolio</a>
-                <a href="/contact" className="btn-outline">Hire Me</a>
+                <a href="/contact" className="btn-outline">Hire Us</a>
               </div>
             </div>
           </div>
@@ -93,7 +93,7 @@ export default function About() {
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <div className="badge" style={{ margin: '0 auto 1rem' }}>Skills</div>
-            <h2 className="section-title">What I Work With</h2>
+            <h2 className="section-title">What We Work With</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', maxWidth: '800px', margin: '0 auto' }}>
             {skills.map(skill => (
@@ -122,7 +122,7 @@ export default function About() {
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <div className="badge" style={{ margin: '0 auto 1rem' }}>Experience</div>
-            <h2 className="section-title">My Journey</h2>
+            <h2 className="section-title">Our Journey</h2>
           </div>
           <div style={{ maxWidth: '680px', margin: '0 auto', position: 'relative' }}>
             {/* vertical line */}

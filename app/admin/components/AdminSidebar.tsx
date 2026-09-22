@@ -14,12 +14,16 @@ import {
   Zap,
   Sun,
   Moon,
+  Layers,
+  Quote,
 } from 'lucide-react';
 
 const navItems = [
-  { href: '/admin/dashboard', label: 'Dashboard', Icon: LayoutDashboard },
-  { href: '/admin/projects',  label: 'Projects',  Icon: FolderOpen      },
-  { href: '/admin/messages',  label: 'Messages',  Icon: MessageSquare   },
+  { href: '/admin/dashboard',    label: 'Dashboard',    Icon: LayoutDashboard },
+  { href: '/admin/projects',     label: 'Projects',     Icon: FolderOpen      },
+  { href: '/admin/services',     label: 'Services',     Icon: Layers          },
+  { href: '/admin/testimonials', label: 'Testimonials', Icon: Quote           },
+  { href: '/admin/messages',     label: 'Messages',     Icon: MessageSquare   },
 ];
 
 interface AdminSidebarProps {
