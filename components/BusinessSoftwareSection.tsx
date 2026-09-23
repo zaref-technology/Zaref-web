@@ -5,7 +5,7 @@ import { BUSINESS_SOLUTIONS } from '@/constants/solutions';
 
 export default function BusinessSoftwareSection() {
   return (
-    <Section id="solutions" className="scroll-mt-[var(--header-height)] border-y border-border bg-surface-2">
+    <Section id="solutions" className="border-y border-border bg-surface-2">
       <Container>
         <div className="grid grid-cols-1 items-start gap-10 md:grid-cols-[0.9fr_1.1fr] md:gap-14">
           <div>

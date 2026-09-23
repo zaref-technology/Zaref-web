@@ -69,7 +69,7 @@ export default async function Footer() {
 
           {/* Services */}
           <div>
-            <div className={colHeading}>Services</div>
+            <Link href={ROUTES.services} className={`${colHeading} inline-block transition-colors hover:text-primary`}>Services</Link>
             <div className="flex flex-col gap-2.5">
               {CAPABILITIES.map(cap => (
                 <Link key={cap.n} href={`${ROUTES.services}#${cap.slug}`} className={footerLink}>{cap.title}</Link>

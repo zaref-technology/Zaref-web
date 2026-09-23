@@ -1,20 +1,22 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { ArrowRight, Check } from 'lucide-react';
 import { DEFAULT_OG_IMAGES } from '@/constants/site';
 import { CAPABILITIES } from '@/constants/capabilities';
 import { BUSINESS_SOLUTIONS } from '@/constants/solutions';
-import { ROUTES } from '@/constants/routes';
+import { ROUTES, getProjectUrl } from '@/constants/routes';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import ProjectsSection from '@/components/ProjectsSection';
 import { JsonLd } from '@/components/JsonLd';
-import { breadcrumbJsonLd } from '@/lib/structured-data';
+import { breadcrumbJsonLd, servicesJsonLd } from '@/lib/structured-data';
+import { listProjects } from '@/services/projects.service';
 
-/* Shared anchor scroll-margin — header height plus a small intentional buffer, so a jumped-to
- * heading never sits flush against the fixed header. */
-const anchorScrollMt = 'scroll-mt-[calc(var(--header-height)+16px)]';
+/* Shared anchor scroll-margin — only the small intentional buffer; the header height itself is
+ * now supplied globally by `html { scroll-padding-top }`, so adding it here would double it. */
+const anchorScrollMt = 'scroll-mt-4';
 
 const title = 'Software Development Services';
 const description = "Explore Zaref's custom software development, web application, mobile app, business systems, AI automation and integration services for businesses and organizations.";
@@ -44,10 +46,15 @@ const engagementModels = [
   },
 ];
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  // Real Work evidence per capability comes only from each published project's own capabilityIds —
+  // nothing is inferred, and a capability with no such project shows nothing.
+  const projects = (await listProjects()).filter(p => !!p.slug);
+
   return (
     <div className="pt-[var(--header-height)]">
       <JsonLd data={breadcrumbJsonLd([{ name: 'Home', path: '/' }, { name: 'Services', path: '/services' }])} />
+      <JsonLd data={servicesJsonLd(CAPABILITIES)} />
 
       {/* Hero — its own purpose, same restrained visual language as the homepage hero */}
       <section className="relative overflow-hidden border-b border-border">
@@ -122,6 +129,22 @@ export default function ServicesPage() {
                         {cap.title}
                       </h2>
                       <p className="max-w-[480px] leading-[1.75] text-muted">{cap.longDescription}</p>
+
+                      {(() => {
+                        const related = projects.filter(p => p.capabilityIds?.includes(cap.slug));
+                        if (related.length === 0) return null;
+                        return (
+                          <p className="mt-5 max-w-[480px] text-sm leading-[1.7] text-muted">
+                            Related work:{' '}
+                            {related.map((p, idx) => (
+                              <span key={p.id}>
+                                {idx > 0 && ', '}
+                                <Link href={getProjectUrl(p)} className="font-semibold text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline">{p.title}</Link>
+                              </span>
+                            ))}
+                          </p>
+                        );
+                      })()}
 
                       {cap.slug === 'web-applications' && (
                         <p className="mt-5 max-w-[480px] border-l-2 border-border pl-4 text-sm leading-[1.7] text-muted">

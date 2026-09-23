@@ -1,23 +1,4 @@
-import { Mail, Phone, MessageCircle, MapPin } from 'lucide-react';
-import type { IconComponent } from './service';
-import type { SiteSettings } from '@/types/settings';
 import { CAPABILITIES } from './capabilities';
-
-export interface ContactInfoItem {
-  key: keyof SiteSettings;
-  label: string;
-  icon: IconComponent;
-  hrefPrefix?: string;
-  external?: boolean;
-}
-
-/** The "Get in Touch" info cards on the Contact page — sourced from Site Settings. */
-export const CONTACT_INFO_ITEMS: ContactInfoItem[] = [
-  { key: 'email', label: 'Email', icon: Mail, hrefPrefix: 'mailto:' },
-  { key: 'phone', label: 'Phone', icon: Phone, hrefPrefix: 'tel:' },
-  { key: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, hrefPrefix: 'https://wa.me/', external: true },
-  { key: 'location', label: 'Location', icon: MapPin },
-];
 
 /**
  * The Contact form stores whichever label is selected here directly as free text (see

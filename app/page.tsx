@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { ArrowRight } from 'lucide-react';
 import Hero from '@/components/Hero';
 import CredibilityStrip from '@/components/CredibilityStrip';
@@ -12,6 +13,10 @@ import { Button } from '@/components/ui/Button';
 
 // Timed ISR fallback — admin edits go live immediately via on-demand revalidation
 // (see lib/revalidate.ts), this is just a ceiling in case that ever gets missed.
+// The root layout no longer sets a site-wide canonical (it would be inherited by every page that
+// forgot its own, including 404); the homepage declares its own.
+export const metadata: Metadata = { alternates: { canonical: '/' } };
+
 export const revalidate = 300;
 
 export default function Home() {

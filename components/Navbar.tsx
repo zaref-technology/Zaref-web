@@ -4,13 +4,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/app/context/ThemeContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sun, Moon, Menu, X } from 'lucide-react';
 import { NAV_LINKS } from '@/constants/nav';
 import { ROUTES } from '@/constants/routes';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
-import { isActiveRoute } from '@/lib/nav';
+import { isNavLinkActive } from '@/lib/nav';
 
 const iconBtn =
   'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted transition-colors hover:bg-foreground/[0.05] hover:text-foreground';
@@ -21,8 +21,32 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [hash, setHash] = useState('');
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => { setMounted(true); }, []);
+
+  // Escape closes the mobile menu and returns focus to the button that opened it.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [menuOpen]);
+
+  // Tracks the URL hash so links like "Solutions" (/services#solutions) can highlight correctly
+  // even though it shares its base path with "Services" and usePathname() doesn't expose hashes.
+  useEffect(() => {
+    setHash(window.location.hash);
+    const onHashChange = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, [pathname]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -64,14 +88,14 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav aria-label="Primary" className="hidden items-center gap-8 md:flex">
           {NAV_LINKS.map(l => {
-            const activePath = l.activePath === undefined ? l.href : l.activePath;
-            const active = activePath !== null && isActiveRoute(pathname, activePath);
+            const active = isNavLinkActive(l, NAV_LINKS, pathname, hash);
             return (
               <Link
                 key={l.href}
                 href={l.href}
+                onClick={() => setHash(l.href.includes('#') ? `#${l.href.split('#')[1]}` : '')}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
                   'text-sm font-medium text-muted transition-colors hover:text-foreground',
@@ -86,8 +110,15 @@ export default function Navbar() {
 
         {/* Right controls */}
         <div className="flex flex-shrink-0 items-center gap-3">
-          <button onClick={toggleTheme} aria-label="Toggle theme" className={iconBtn}>
-            {mounted && theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            // The theme is only known after mount (it's set pre-hydration from localStorage / OS
+            // preference), so the pre-mount label stays neutral to match the server HTML.
+            aria-label={mounted ? (theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme') : 'Toggle theme'}
+            className={iconBtn}
+          >
+            {mounted && theme === 'dark' ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}
           </button>
 
           <div className="hidden md:inline-flex">
@@ -97,28 +128,33 @@ export default function Navbar() {
           </div>
 
           <button
+            ref={menuButtonRef}
+            type="button"
             onClick={() => setMenuOpen(v => !v)}
-            aria-label="Toggle menu"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
             className={cn(iconBtn, 'flex md:hidden')}
           >
-            {menuOpen ? <X size={18} /> : <Menu size={18} />}
+            {menuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
           </button>
         </div>
       </div>
 
       {/* Mobile drawer */}
       {menuOpen && (
-        <div className="animate-fade-in border-t border-border bg-[var(--nav-bg)] px-6 py-5 backdrop-blur-md md:hidden">
-          <nav className="flex flex-col gap-1">
+        <div id="mobile-menu" className="animate-fade-in border-t border-border bg-[var(--nav-bg)] px-6 py-5 backdrop-blur-md md:hidden">
+          <nav aria-label="Mobile" className="flex flex-col gap-1">
             {NAV_LINKS.map(l => {
-              const activePath = l.activePath === undefined ? l.href : l.activePath;
-              const active = activePath !== null && isActiveRoute(pathname, activePath);
+              const active = isNavLinkActive(l, NAV_LINKS, pathname, hash);
               return (
                 <Link
                   key={l.href}
                   href={l.href}
-                  onClick={() => setMenuOpen(false)}
+                  onClick={() => {
+                    setHash(l.href.includes('#') ? `#${l.href.split('#')[1]}` : '');
+                    setMenuOpen(false);
+                  }}
                   aria-current={active ? 'page' : undefined}
                   className={cn(
                     'rounded-md px-3 py-3 text-[0.95rem] font-medium text-muted transition-colors hover:bg-foreground/[0.04] hover:text-foreground',

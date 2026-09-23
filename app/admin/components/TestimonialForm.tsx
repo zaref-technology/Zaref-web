@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 import { createTestimonial, updateTestimonial } from '@/services/testimonials.service';
+import { listProjects } from '@/services/projects.service';
+import type { Project } from '@/types/project';
 import {
   CheckCircle, AlertTriangle, Loader2, Star, Upload, X,
 } from 'lucide-react';
@@ -30,7 +32,14 @@ export default function TestimonialForm({ initialData, mode, nextOrder = 0 }: Te
     rating:  initialData?.rating  ?? 5,
     avatar:  initialData?.avatar  ?? '',
     order:   initialData?.order   ?? nextOrder,
+    projectId: initialData?.projectId ?? '',
   });
+  const [projects, setProjects] = useState<Project[]>([]);
+
+  // Real project records for the optional "Related Project" selector (drafts included in Admin).
+  useEffect(() => {
+    listProjects({ includeDrafts: true }).then(setProjects).catch(() => setProjects([]));
+  }, []);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState('');
@@ -67,7 +76,12 @@ export default function TestimonialForm({ initialData, mode, nextOrder = 0 }: Te
       } else if (mode === 'edit' && initialData?.id) {
         await updateTestimonial(initialData.id, form);
       }
-      await triggerRevalidate([{ path: '/' }, { path: '/testimonials' }]);
+      const related = projects.find(p => p.id === form.projectId);
+      await triggerRevalidate([
+        { path: '/' },
+        { path: '/testimonials' },
+        ...(related?.slug ? [{ path: `/work/${related.slug}` }] : []),
+      ]);
       setSuccess(true);
       setTimeout(() => router.push('/admin/testimonials'), 1000);
     } catch (err: unknown) {
@@ -237,6 +251,28 @@ export default function TestimonialForm({ initialData, mode, nextOrder = 0 }: Te
             {form.rating}/5
           </span>
         </div>
+      </div>
+
+      {/* Related Project (optional) — stores the real project document ID; never auto-assigned */}
+      <div>
+        <label style={labelStyle} htmlFor="testimonial-project">Related Project (optional)</label>
+        <select
+          id="testimonial-project"
+          value={form.projectId ?? ''}
+          onChange={e => setForm(prev => ({ ...prev, projectId: e.target.value }))}
+          style={inputStyle}
+        >
+          <option value="">No related project</option>
+          {form.projectId && !projects.some(p => p.id === form.projectId) && (
+            <option value={form.projectId}>Unknown project ({form.projectId})</option>
+          )}
+          {projects.map(p => (
+            <option key={p.id} value={p.id}>{p.title}{p.status === 'draft' ? ' (draft)' : ''}</option>
+          ))}
+        </select>
+        <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: '0.4rem 0 0' }}>
+          Only link a testimonial to a project when the client confirmed it refers to that work.
+        </p>
       </div>
 
       {/* Display Order */}
