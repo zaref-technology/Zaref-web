@@ -2,35 +2,27 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  addDoc, updateDoc, doc, collection, serverTimestamp,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { uploadToCloudinary } from '@/lib/cloudinary';
+import { createTestimonial, updateTestimonial } from '@/services/testimonials.service';
 import {
-  CheckCircle, AlertTriangle, Loader2, Star, Upload, X, User,
+  CheckCircle, AlertTriangle, Loader2, Star, Upload, X,
 } from 'lucide-react';
+import type { TestimonialInput } from '@/types/testimonial';
+import { initialsFromName } from '@/constants/testimonial';
+import { triggerRevalidate } from '@/lib/revalidate';
 
-export interface TestimonialData {
-  id?: string;
-  name: string;
-  role: string;
-  company: string;
-  quote: string;
-  rating: number;
-  avatar: string;   // Cloudinary URL or empty string (falls back to initials)
-  order: number;
-}
+/** Form state shape — a TestimonialInput plus an optional id, present only in edit mode. */
+export type TestimonialFormData = TestimonialInput & { id?: string };
 
 interface TestimonialFormProps {
-  initialData?: TestimonialData;
+  initialData?: TestimonialFormData;
   mode: 'new' | 'edit';
   nextOrder?: number;
 }
 
 export default function TestimonialForm({ initialData, mode, nextOrder = 0 }: TestimonialFormProps) {
   const router = useRouter();
-  const [form, setForm] = useState<TestimonialData>({
+  const [form, setForm] = useState<TestimonialFormData>({
     name:    initialData?.name    ?? '',
     role:    initialData?.role    ?? '',
     company: initialData?.company ?? '',
@@ -44,7 +36,7 @@ export default function TestimonialForm({ initialData, mode, nextOrder = 0 }: Te
   const [error, setError]         = useState('');
   const [success, setSuccess]     = useState(false);
 
-  const set = (key: keyof TestimonialData) =>
+  const set = (key: keyof TestimonialFormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm(prev => ({ ...prev, [key]: e.target.value }));
 
@@ -70,16 +62,12 @@ export default function TestimonialForm({ initialData, mode, nextOrder = 0 }: Te
     setLoading(true);
     setError('');
     try {
-      const data = { ...form, rating: Number(form.rating), order: Number(form.order) };
       if (mode === 'new') {
-        await addDoc(collection(db, 'testimonials'), {
-          ...data, createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
-        });
+        await createTestimonial(form);
       } else if (mode === 'edit' && initialData?.id) {
-        await updateDoc(doc(db, 'testimonials', initialData.id), {
-          ...data, updatedAt: serverTimestamp(),
-        });
+        await updateTestimonial(initialData.id, form);
       }
+      await triggerRevalidate([{ path: '/' }, { path: '/testimonials' }]);
       setSuccess(true);
       setTimeout(() => router.push('/admin/testimonials'), 1000);
     } catch (err: unknown) {
@@ -108,9 +96,7 @@ export default function TestimonialForm({ initialData, mode, nextOrder = 0 }: Te
   };
 
   // Avatar initials fallback
-  const initials = form.name
-    ? form.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-    : '?';
+  const initials = form.name ? initialsFromName(form.name) : '?';
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

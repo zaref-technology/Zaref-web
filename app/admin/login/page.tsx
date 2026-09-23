@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/firebase-auth';
 import { useAuth } from '@/app/context/AuthContext';
 import { Zap, Mail, Lock, ArrowRight, Loader2, AlertTriangle } from 'lucide-react';
 

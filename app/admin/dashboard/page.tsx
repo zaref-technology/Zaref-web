@@ -3,13 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  collection, getDocs, query, where, orderBy, limit, Timestamp,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import {
   FolderOpen, MessageSquare, Bell, Plus, Inbox,
   ArrowRight, User, Mail, Calendar,
 } from 'lucide-react';
+import { listProjects } from '@/services/projects.service';
+import { listMessages, countMessages } from '@/services/messages.service';
+import type { Message } from '@/types/message';
 
 interface Stats {
   totalProjects: number;
@@ -17,36 +16,26 @@ interface Stats {
   unreadMessages: number;
 }
 
-interface RecentMessage {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  read: boolean;
-  createdAt: Timestamp | null;
-}
-
 export default function DashboardPage() {
   const [stats, setStats]   = useState<Stats>({ totalProjects: 0, totalMessages: 0, unreadMessages: 0 });
-  const [recent, setRecent] = useState<RecentMessage[]>([]);
+  const [recent, setRecent] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [projSnap, msgSnap, unreadSnap, recentSnap] = await Promise.all([
-          getDocs(collection(db, 'projects')),
-          getDocs(collection(db, 'messages')),
-          getDocs(query(collection(db, 'messages'), where('read', '==', false))),
-          getDocs(query(collection(db, 'messages'), orderBy('createdAt', 'desc'), limit(5))),
+        const [projects, totalMessages, unreadMessages, recentMessages] = await Promise.all([
+          listProjects(),
+          countMessages(),
+          countMessages(true),
+          listMessages({ limit: 5 }),
         ]);
         setStats({
-          totalProjects:  projSnap.size,
-          totalMessages:  msgSnap.size,
-          unreadMessages: unreadSnap.size,
+          totalProjects:  projects.length,
+          totalMessages,
+          unreadMessages,
         });
-        setRecent(recentSnap.docs.map(d => ({ id: d.id, ...d.data() } as RecentMessage)));
+        setRecent(recentMessages);
       } catch (err) {
         console.error('Dashboard fetch error:', err);
       } finally {

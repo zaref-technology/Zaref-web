@@ -2,22 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {
-  collection, getDocs, deleteDoc, doc, orderBy, query, Timestamp,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { Plus, Pencil, Trash2, Layers, ArrowUpDown } from 'lucide-react';
-import { ICON_MAP } from '../components/ServiceForm';
-
-interface Service {
-  id: string;
-  title: string;
-  description: string;
-  iconName: string;
-  color: string;
-  order: number;
-  createdAt: Timestamp | null;
-}
+import { listServices, deleteService } from '@/services/services.service';
+import { SERVICE_ICON_MAP } from '@/constants/service';
+import { triggerRevalidate } from '@/lib/revalidate';
+import type { Service } from '@/types/service';
 
 export default function ServicesAdminPage() {
   const [services, setServices]   = useState<Service[]>([]);
@@ -28,8 +17,7 @@ export default function ServicesAdminPage() {
   useEffect(() => {
     async function fetch() {
       try {
-        const snap = await getDocs(query(collection(db, 'services'), orderBy('order', 'asc')));
-        setServices(snap.docs.map(d => ({ id: d.id, ...d.data() } as Service)));
+        setServices(await listServices());
       } catch (err) {
         console.error(err);
       } finally {
@@ -42,8 +30,9 @@ export default function ServicesAdminPage() {
   const handleDelete = async (id: string) => {
     setDeleting(id);
     try {
-      await deleteDoc(doc(db, 'services', id));
+      await deleteService(id);
       setServices(prev => prev.filter(s => s.id !== id));
+      await triggerRevalidate([{ path: '/' }, { path: '/services' }]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -91,7 +80,7 @@ export default function ServicesAdminPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {services.map(svc => {
-            const Icon = ICON_MAP[svc.iconName] ?? Layers;
+            const Icon = SERVICE_ICON_MAP[svc.iconName] ?? Layers;
             return (
               <div
                 key={svc.id}

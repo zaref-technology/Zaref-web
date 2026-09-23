@@ -3,18 +3,18 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { doc, getDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { use } from 'react';
-import TestimonialForm, { TestimonialData } from '../../../components/TestimonialForm';
+import TestimonialForm, { type TestimonialFormData } from '../../../components/TestimonialForm';
 import { ChevronRight, Trash2, Loader2, Search } from 'lucide-react';
+import { getTestimonial, deleteTestimonial } from '@/services/testimonials.service';
+import { triggerRevalidate } from '@/lib/revalidate';
 
 interface PageProps { params: Promise<{ id: string }>; }
 
 export default function EditTestimonialPage({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
-  const [testimonial, setTestimonial] = useState<TestimonialData | null>(null);
+  const [testimonial, setTestimonial] = useState<TestimonialFormData | null>(null);
   const [loading, setLoading]         = useState(true);
   const [notFound, setNotFound]       = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -23,9 +23,9 @@ export default function EditTestimonialPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchTestimonial() {
       try {
-        const snap = await getDoc(doc(db, 'testimonials', id));
-        if (!snap.exists()) { setNotFound(true); return; }
-        setTestimonial({ id: snap.id, ...snap.data() } as TestimonialData);
+        const data = await getTestimonial(id);
+        if (!data) { setNotFound(true); return; }
+        setTestimonial(data);
       } catch { setNotFound(true); }
       finally { setLoading(false); }
     }
@@ -35,7 +35,8 @@ export default function EditTestimonialPage({ params }: PageProps) {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await deleteDoc(doc(db, 'testimonials', id));
+      await deleteTestimonial(id);
+      await triggerRevalidate([{ path: '/' }, { path: '/testimonials' }]);
       router.replace('/admin/testimonials');
     } catch { setDeleting(false); }
   };

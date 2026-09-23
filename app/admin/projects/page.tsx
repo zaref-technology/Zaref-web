@@ -3,26 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
-  collection, getDocs, deleteDoc, doc, orderBy, query, Timestamp,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import {
   Plus, Pencil, Trash2, Globe, GitFork,
   Calendar, FolderOpen,
 } from 'lucide-react';
-
-interface Project {
-  id: string;
-  title: string;
-  category: string;
-  tags: string;
-  description: string;
-  color: string;
-  projectUrl: string;
-  githubUrl: string;
-  images: string[];
-  createdAt: Timestamp | null;
-}
+import { listProjects, deleteProject } from '@/services/projects.service';
+import { triggerRevalidate } from '@/lib/revalidate';
+import type { Project } from '@/types/project';
 
 export default function ProjectsPage() {
   const [projects, setProjects]   = useState<Project[]>([]);
@@ -33,8 +19,7 @@ export default function ProjectsPage() {
   useEffect(() => {
     async function fetchProjects() {
       try {
-        const snap = await getDocs(query(collection(db, 'projects'), orderBy('createdAt', 'desc')));
-        setProjects(snap.docs.map(d => ({ id: d.id, ...d.data() } as Project)));
+        setProjects(await listProjects({ includeDrafts: true }));
       } catch (err) {
         console.error(err);
       } finally {
@@ -47,8 +32,14 @@ export default function ProjectsPage() {
   const handleDelete = async (id: string) => {
     setDeleting(id);
     try {
-      await deleteDoc(doc(db, 'projects', id));
+      const slug = projects.find(p => p.id === id)?.slug;
+      await deleteProject(id);
       setProjects(prev => prev.filter(p => p.id !== id));
+      await triggerRevalidate([
+        { path: '/' },
+        { path: '/work' },
+        ...(slug ? [{ path: `/work/${slug}` }] : []),
+      ]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -145,6 +136,16 @@ export default function ProjectsPage() {
                     {proj.category}
                   </span>
                 </div>
+
+                {proj.status === 'draft' && (
+                  <span style={{
+                    display: 'inline-block', marginBottom: '0.5rem', padding: '0.1rem 0.5rem',
+                    background: 'rgba(217,119,6,0.12)', color: '#d97706',
+                    borderRadius: '999px', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em',
+                  }}>
+                    Draft
+                  </span>
+                )}
 
                 {proj.tags && (
                   <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: '0 0 0.5rem' }}>{proj.tags}</p>

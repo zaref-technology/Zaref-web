@@ -2,71 +2,24 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  addDoc, updateDoc, doc, collection, serverTimestamp,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import {
-  CheckCircle, AlertTriangle, Loader2,
-  Code2, Palette, Smartphone, Server, Globe, Zap, Shield, Wrench,
-  Layers, Database, BarChart2, Brain, PenTool, CloudLightning, Star,
-  MonitorSmartphone, Cpu, Package, LayoutTemplate,
-} from 'lucide-react';
+import { CheckCircle, AlertTriangle, Loader2, Code2 } from 'lucide-react';
+import { createService, updateService } from '@/services/services.service';
+import { SERVICE_ICON_OPTIONS, SERVICE_ICON_MAP, SERVICE_ACCENT_COLORS } from '@/constants/service';
+import { triggerRevalidate } from '@/lib/revalidate';
+import type { ServiceInput } from '@/types/service';
 
-export interface ServiceData {
-  id?: string;
-  title: string;
-  description: string;
-  iconName: string;
-  color: string;
-  order: number;
-}
-
-const ICONS: { name: string; Icon: React.ComponentType<{ size?: number; color?: string }> }[] = [
-  { name: 'Code2',          Icon: Code2 },
-  { name: 'Palette',        Icon: Palette },
-  { name: 'Smartphone',     Icon: Smartphone },
-  { name: 'Server',         Icon: Server },
-  { name: 'Globe',          Icon: Globe },
-  { name: 'Zap',            Icon: Zap },
-  { name: 'Shield',         Icon: Shield },
-  { name: 'Wrench',         Icon: Wrench },
-  { name: 'Layers',         Icon: Layers },
-  { name: 'Database',       Icon: Database },
-  { name: 'BarChart2',      Icon: BarChart2 },
-  { name: 'Brain',          Icon: Brain },
-  { name: 'PenTool',        Icon: PenTool },
-  { name: 'CloudLightning', Icon: CloudLightning },
-  { name: 'Star',           Icon: Star },
-  { name: 'MonitorSmartphone', Icon: MonitorSmartphone },
-  { name: 'Cpu',            Icon: Cpu },
-  { name: 'Package',        Icon: Package },
-  { name: 'LayoutTemplate', Icon: LayoutTemplate },
-];
-
-export const ICON_MAP: Record<string, React.ComponentType<{ size?: number; color?: string }>> =
-  Object.fromEntries(ICONS.map(({ name, Icon }) => [name, Icon]));
-
-const COLORS = [
-  { label: 'Blue',   value: '#2563eb' },
-  { label: 'Purple', value: '#7c3aed' },
-  { label: 'Green',  value: '#059669' },
-  { label: 'Amber',  value: '#d97706' },
-  { label: 'Cyan',   value: '#0891b2' },
-  { label: 'Pink',   value: '#db2777' },
-  { label: 'Orange', value: '#ea580c' },
-  { label: 'Red',    value: '#dc2626' },
-];
+/** Form state shape — a ServiceInput plus an optional id, present only in edit mode. */
+export type ServiceFormData = ServiceInput & { id?: string };
 
 interface ServiceFormProps {
-  initialData?: ServiceData;
+  initialData?: ServiceFormData;
   mode: 'new' | 'edit';
   nextOrder?: number;
 }
 
 export default function ServiceForm({ initialData, mode, nextOrder = 0 }: ServiceFormProps) {
   const router = useRouter();
-  const [form, setForm] = useState<ServiceData>({
+  const [form, setForm] = useState<ServiceFormData>({
     title:       initialData?.title       ?? '',
     description: initialData?.description ?? '',
     iconName:    initialData?.iconName    ?? 'Code2',
@@ -77,7 +30,7 @@ export default function ServiceForm({ initialData, mode, nextOrder = 0 }: Servic
   const [error, setError]     = useState('');
   const [success, setSuccess] = useState(false);
 
-  const set = (key: keyof ServiceData) =>
+  const set = (key: keyof ServiceFormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm(prev => ({ ...prev, [key]: e.target.value }));
 
@@ -88,19 +41,11 @@ export default function ServiceForm({ initialData, mode, nextOrder = 0 }: Servic
     setError('');
     try {
       if (mode === 'new') {
-        await addDoc(collection(db, 'services'), {
-          ...form,
-          order: Number(form.order),
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
+        await createService(form);
       } else if (mode === 'edit' && initialData?.id) {
-        await updateDoc(doc(db, 'services', initialData.id), {
-          ...form,
-          order: Number(form.order),
-          updatedAt: serverTimestamp(),
-        });
+        await updateService(initialData.id, form);
       }
+      await triggerRevalidate([{ path: '/' }, { path: '/services' }]);
       setSuccess(true);
       setTimeout(() => router.push('/admin/services'), 1000);
     } catch (err: unknown) {
@@ -133,7 +78,7 @@ export default function ServiceForm({ initialData, mode, nextOrder = 0 }: Servic
     letterSpacing: '0.06em',
   };
 
-  const SelectedIcon = ICON_MAP[form.iconName] ?? Code2;
+  const SelectedIcon = SERVICE_ICON_MAP[form.iconName] ?? Code2;
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -186,7 +131,7 @@ export default function ServiceForm({ initialData, mode, nextOrder = 0 }: Servic
       <div>
         <label style={labelStyle}>Icon</label>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(48px, 1fr))', gap: '0.5rem' }}>
-          {ICONS.map(({ name, Icon }) => (
+          {SERVICE_ICON_OPTIONS.map(({ name, Icon }) => (
             <button
               key={name}
               type="button"
@@ -213,7 +158,7 @@ export default function ServiceForm({ initialData, mode, nextOrder = 0 }: Servic
       <div>
         <label style={labelStyle}>Accent Color</label>
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          {COLORS.map(c => (
+          {SERVICE_ACCENT_COLORS.map(c => (
             <button
               key={c.value}
               type="button"
@@ -231,7 +176,7 @@ export default function ServiceForm({ initialData, mode, nextOrder = 0 }: Servic
             />
           ))}
           <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-            {COLORS.find(c => c.value === form.color)?.label}
+            {SERVICE_ACCENT_COLORS.find(c => c.value === form.color)?.label}
           </span>
         </div>
       </div>

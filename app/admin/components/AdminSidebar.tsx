@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth } from '@/lib/firebase-auth';
 import { useAuth } from '@/app/context/AuthContext';
 import { useTheme } from '@/app/context/ThemeContext';
 import {

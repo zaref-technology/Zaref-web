@@ -1,56 +1,67 @@
 @import "tailwindcss";
 
-/* ─── Design Tokens ────────────────────────────────────── */
+/* Dark mode is driven by [data-theme="dark"] on <html>, set by ThemeContext — not the OS media query. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ─── Design Tokens ────────────────────────────────────────
+   Sampled from the ZAREF logo mark (public/zaref-mark.png):
+   bright stroke ≈ #0B74FB, deep stroke ≈ #002779. Tokens below
+   land in that range, close to the brief's suggested #175CD3 / #123B8F. */
 :root {
-  /* Primary */
-  --primary: #2563eb;
-  --primary-light: #3b82f6;
-  --primary-dark: #1d4ed8;
-  --primary-glow: rgba(37, 99, 235, 0.35);
+  /* Single source of truth for the fixed header's height — read by Navbar's own height and by
+   * every page's header-clearance padding / anchor scroll-margin, so they can never drift out
+   * of sync. Identical on mobile and desktop (Navbar has no responsive height variant). */
+  --header-height: 76px;
 
-  /* Light theme (default) */
-  --background: #f8fafc;
+  --primary: #175cd3;
+  --primary-light: #2e7df7;
+  --primary-dark: #123b8f;
+  --primary-glow: rgba(23, 92, 211, 0.22);
+
+  --background: #fafaf9;
   --surface: #ffffff;
-  --surface-2: #f1f5f9;
-  --border: #e2e8f0;
-  --secondary: #000000;
-  /* black in light theme */
-  --foreground: #0f172a;
-  --muted: #64748b;
-  --nav-bg: rgba(255, 255, 255, 0.85);
-
-  /* Transitions */
-  --transition: 0.3s ease;
+  --surface-2: #f5f6f7;
+  --border: #e4e7ec;
+  --foreground: #101828;
+  --muted: #667085;
+  --nav-bg: rgba(250, 250, 249, 0.85);
 }
 
-/* Dark theme overrides */
 [data-theme="dark"] {
-  --background: #0a0a0f;
-  --surface: #111827;
-  --surface-2: #1e293b;
-  --border: #1e293b;
-  --secondary: #ffffff;
-  /* white in dark theme */
-  --foreground: #f1f5f9;
-  --muted: #94a3b8;
-  --nav-bg: rgba(10, 10, 15, 0.85);
+  --background: #0b1018;
+  --surface: #111722;
+  --surface-2: #151c28;
+  --border: rgba(255, 255, 255, 0.08);
+  --foreground: #f8fafc;
+  --muted: #98a2b3;
+  --nav-bg: rgba(11, 16, 24, 0.85);
 }
 
+/* Expose design tokens as Tailwind utilities: bg-primary, text-muted, border-border, etc. */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --animate-blob-float: blobFloat 9s ease-in-out infinite;
+  --animate-chip-float: chipFloat 5s ease-in-out infinite;
+  --animate-scroll-pulse: scrollPulse 2s ease-in-out infinite;
+  --animate-nav-dot: navDot 1.8s ease-in-out infinite;
+  --animate-drawer-in: drawerIn 0.2s ease;
+  --animate-fade-in: fadeIn 0.4s ease;
+  --animate-skeleton-pulse: skeletonPulse 1.5s ease-in-out infinite;
+  --animate-spin-fast: spin 0.7s linear infinite;
 }
 
 /* ─── Base Styles ──────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-
-}
-
 html {
   scroll-behavior: smooth;
 }
@@ -58,50 +69,74 @@ html {
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans, 'Inter', Arial, sans-serif);
-  transition: background-color var(--transition), color var(--transition);
-  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* ─── Scrollbar ────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: var(--background);
 }
-
 ::-webkit-scrollbar-thumb {
   background: var(--primary);
   border-radius: 3px;
 }
 
-/* ─── Utility Classes ──────────────────────────────────── */
+/* ─── Keyframes ────────────────────────────────────────── */
+@keyframes blobFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(28px, -28px) scale(1.04); }
+  66%      { transform: translate(-18px, 18px) scale(0.97); }
+}
+@keyframes chipFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.45; transform: scaleY(1); }
+  50%      { opacity: 1; transform: scaleY(1.15); }
+}
+@keyframes navDot {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+@keyframes drawerIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Legacy utility classes — admin CMS only ─────────────
+   The public site uses Tailwind utilities + components/ui/* directly.
+   The admin panel (internal tool, not SEO/perf-critical) still uses these
+   hand-rolled classes. Do not use these in new public-facing code. */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
-
 .section {
   padding: 5rem 0;
 }
-
-.section-title {
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 800;
-  color: var(--foreground);
-  margin-bottom: 1rem;
-  line-height: 1.1;
-}
-
-.section-subtitle {
-  font-size: 1.125rem;
-  color: var(--muted);
-  max-width: 600px;
-}
-
 .badge {
   display: inline-flex;
   align-items: center;
@@ -117,7 +152,6 @@ body {
   text-transform: uppercase;
   margin-bottom: 1.2rem;
 }
-
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -131,15 +165,13 @@ body {
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
-
 .btn-primary:hover {
   background: var(--primary-dark);
   transform: translateY(-2px);
   box-shadow: 0 8px 24px var(--primary-glow);
 }
-
 .btn-outline {
   display: inline-flex;
   align-items: center;
@@ -153,30 +185,24 @@ body {
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: background var(--transition), color var(--transition), transform var(--transition);
+  transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
 }
-
 .btn-outline:hover {
   background: color-mix(in srgb, var(--primary) 12%, transparent);
   transform: translateY(-2px);
 }
-
-/* ─── Card ─────────────────────────────────────────────── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 1.25rem;
   padding: 2rem;
-  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
-
 .card:hover {
   transform: translateY(-6px);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.12);
   border-color: var(--primary);
 }
-
-/* ─── Glow Blob Background ─────────────────────────────── */
 .glow-blob {
   position: absolute;
   border-radius: 50%;

@@ -2,22 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import {
-  collection, getDocs, orderBy, query, updateDoc, deleteDoc, doc, Timestamp,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import {
   Inbox, User, Mail, Calendar, Trash2, Reply, ChevronDown, Loader2,
 } from 'lucide-react';
-
-interface Message {
-  id: string;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  read: boolean;
-  createdAt: Timestamp | null;
-}
+import { listMessages, markMessageRead, deleteMessage } from '@/services/messages.service';
+import type { Message } from '@/types/message';
 
 export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -28,8 +16,7 @@ export default function MessagesPage() {
 
   const fetchMessages = async () => {
     try {
-      const snap = await getDocs(query(collection(db, 'messages'), orderBy('createdAt', 'desc')));
-      setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() } as Message)));
+      setMessages(await listMessages());
     } catch (err) {
       console.error(err);
     } finally {
@@ -43,7 +30,7 @@ export default function MessagesPage() {
     setExpanded(prev => prev === msg.id ? null : msg.id);
     if (!msg.read) {
       try {
-        await updateDoc(doc(db, 'messages', msg.id), { read: true });
+        await markMessageRead(msg.id);
         setMessages(prev => prev.map(m => m.id === msg.id ? { ...m, read: true } : m));
       } catch (err) {
         console.error(err);
@@ -54,7 +41,7 @@ export default function MessagesPage() {
   const handleDelete = async (id: string) => {
     setDeleting(id);
     try {
-      await deleteDoc(doc(db, 'messages', id));
+      await deleteMessage(id);
       setMessages(prev => prev.filter(m => m.id !== id));
       if (expanded === id) setExpanded(null);
     } catch (err) {

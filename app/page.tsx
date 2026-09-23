@@ -1,58 +1,60 @@
-import Hero from './components/Hero';
-import ServicesSection from './components/ServicesSection';
-import ProjectsSection from './components/ProjectsSection';
-import TestimonialsSection from './components/TestimonialsSection';
+import { ArrowRight } from 'lucide-react';
+import Hero from '@/components/Hero';
+import CredibilityStrip from '@/components/CredibilityStrip';
+import ServicesSection from '@/components/ServicesSection';
+import BusinessSoftwareSection from '@/components/BusinessSoftwareSection';
+import ProjectsSection from '@/components/ProjectsSection';
+import TestimonialsSection from '@/components/TestimonialsSection';
+import ApproachSection from '@/components/ApproachSection';
+import PartnershipSection from '@/components/PartnershipSection';
+import AboutSection from '@/components/AboutSection';
+import { Container } from '@/components/ui/Container';
+import { Button } from '@/components/ui/Button';
 
-const stats = [
-  { value: '50+', label: 'Projects Delivered' },
-  { value: '3+',  label: 'Years Experience'   },
-  { value: '99%', label: 'Client Satisfaction' },
-  { value: '24h', label: 'Response Time'       },
-];
+// Timed ISR fallback — admin edits go live immediately via on-demand revalidation
+// (see lib/revalidate.ts), this is just a ceiling in case that ever gets missed.
+export const revalidate = 300;
 
 export default function Home() {
   return (
     <>
       <Hero />
 
-      {/* Stats Strip */}
-      <section style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
-        <div className="container" style={{ padding: '2.5rem 1.5rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '2rem', textAlign: 'center' }}>
-            {stats.map(s => (
-              <div key={s.label}>
-                <div style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--primary)', lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontSize: '0.875rem', color: 'var(--muted)', marginTop: '0.4rem' }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <CredibilityStrip />
 
-      {/* Services — live from Firestore, 4 cards, horizontal scroll on mobile */}
       <ServicesSection />
 
-      {/* Projects — live from Firestore, 4 cards, horizontal scroll on mobile */}
-      <ProjectsSection />
+      <BusinessSoftwareSection />
 
-      {/* Testimonials — live from Firestore, 4 cards, horizontal scroll on mobile */}
+      {/* Projects — live from Firestore, curated subset (featured presentation) */}
+      <ProjectsSection variant="featured" />
+
+      <ApproachSection />
+
+      <PartnershipSection />
+
+      <AboutSection />
+
+      {/* Testimonials — live from Firestore, adaptive layout */}
       <TestimonialsSection />
 
-      {/* CTA Banner */}
-      <section style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '5rem 0' }}>
-        <div className="container" style={{ textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 800, marginBottom: '1rem', color: 'var(--foreground)' }}>
-            Ready to build something{' '}
-            <span style={{ color: 'var(--primary-light)' }}>amazing?</span>
-          </h2>
-          <p style={{ color: 'var(--muted)', marginBottom: '2rem', fontSize: '1.05rem' }}>
-            Let&apos;s turn your idea into a stunning digital product.
-          </p>
-          <a href="/contact" className="btn-primary" style={{ display: 'inline-flex' }}>
-            Start a Project
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
-        </div>
+      {/* Final CTA — deliberately dark, hardcoded colors so it reads the same in both themes */}
+      <section className="bg-[#0b1018] py-20 md:py-24">
+        <Container>
+          <div className="mx-auto max-w-[600px] text-center">
+            <h2 className="mb-4 text-[clamp(1.75rem,3.2vw,2.5rem)] font-bold leading-[1.15] tracking-[-0.01em] text-white">
+              Have a software challenge worth solving?
+            </h2>
+            <p className="mx-auto mb-8 text-[1.05rem] leading-[1.6] text-white/60">
+              Tell us what you&apos;re building or where your business is getting stuck. We&apos;ll help you determine the right technical approach.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Button href="/contact">
+                Discuss Your Project <ArrowRight size={16} />
+              </Button>
+            </div>
+          </div>
+        </Container>
       </section>
     </>
   );
