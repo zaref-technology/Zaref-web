@@ -2,23 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {
-  collection, getDocs, deleteDoc, doc, orderBy, query, Timestamp,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { Plus, Pencil, Trash2, Quote, Star, ArrowUpDown } from 'lucide-react';
-
-interface Testimonial {
-  id: string;
-  name: string;
-  role: string;
-  company: string;
-  quote: string;
-  rating: number;
-  avatar: string;
-  order: number;
-  createdAt: Timestamp | null;
-}
+import { listTestimonials, deleteTestimonial } from '@/services/testimonials.service';
+import { initialsFromName } from '@/constants/testimonial';
+import { triggerRevalidate } from '@/lib/revalidate';
+import type { Testimonial } from '@/types/testimonial';
 
 export default function TestimonialsAdminPage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
@@ -29,8 +17,7 @@ export default function TestimonialsAdminPage() {
   useEffect(() => {
     async function fetch() {
       try {
-        const snap = await getDocs(query(collection(db, 'testimonials'), orderBy('order', 'asc')));
-        setTestimonials(snap.docs.map(d => ({ id: d.id, ...d.data() } as Testimonial)));
+        setTestimonials(await listTestimonials());
       } catch (err) {
         console.error(err);
       } finally {
@@ -43,8 +30,9 @@ export default function TestimonialsAdminPage() {
   const handleDelete = async (id: string) => {
     setDeleting(id);
     try {
-      await deleteDoc(doc(db, 'testimonials', id));
+      await deleteTestimonial(id);
       setTestimonials(prev => prev.filter(t => t.id !== id));
+      await triggerRevalidate([{ path: '/' }, { path: '/testimonials' }]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -52,9 +40,6 @@ export default function TestimonialsAdminPage() {
       setConfirmId(null);
     }
   };
-
-  const initials = (name: string) =>
-    name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
     <div>
@@ -110,7 +95,7 @@ export default function TestimonialsAdminPage() {
               }}>
                 {t.avatar
                   ? <img src={t.avatar} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : initials(t.name)
+                  : initialsFromName(t.name)
                 }
               </div>
 

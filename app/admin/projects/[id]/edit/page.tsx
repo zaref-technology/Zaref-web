@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { doc, getDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import ProjectForm, { ProjectData } from '../../../components/ProjectForm';
+import ProjectForm, { type ProjectFormData } from '../../../components/ProjectForm';
 import { use } from 'react';
 import { ChevronRight, Trash2, Loader2, Search } from 'lucide-react';
+import { getProject, deleteProject } from '@/services/projects.service';
+import { triggerRevalidate } from '@/lib/revalidate';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -16,7 +16,7 @@ interface PageProps {
 export default function EditProjectPage({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
-  const [project, setProject]         = useState<ProjectData | null>(null);
+  const [project, setProject]         = useState<ProjectFormData | null>(null);
   const [loading, setLoading]         = useState(true);
   const [notFound, setNotFound]       = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -25,9 +25,9 @@ export default function EditProjectPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchProject() {
       try {
-        const snap = await getDoc(doc(db, 'projects', id));
-        if (!snap.exists()) { setNotFound(true); return; }
-        setProject({ id: snap.id, ...snap.data() } as ProjectData);
+        const data = await getProject(id);
+        if (!data) { setNotFound(true); return; }
+        setProject(data);
       } catch (err) {
         console.error(err);
         setNotFound(true);
@@ -41,7 +41,12 @@ export default function EditProjectPage({ params }: PageProps) {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await deleteDoc(doc(db, 'projects', id));
+      await deleteProject(id);
+      await triggerRevalidate([
+        { path: '/' },
+        { path: '/work' },
+        ...(project?.slug ? [{ path: `/work/${project.slug}` }] : []),
+      ]);
       router.replace('/admin/projects');
     } catch (err) {
       console.error(err);
@@ -72,7 +77,7 @@ export default function EditProjectPage({ params }: PageProps) {
   }
 
   return (
-    <div style={{ maxWidth: '680px' }}>
+    <div style={{ maxWidth: '860px' }}>
       {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '2rem', fontSize: '0.875rem', color: 'var(--muted)' }}>
         <Link href="/admin/projects" style={{ color: 'var(--primary-light)', textDecoration: 'none', fontWeight: 600 }}>Projects</Link>

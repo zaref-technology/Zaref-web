@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { doc, getDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { use } from 'react';
-import ServiceForm, { ServiceData } from '../../../components/ServiceForm';
+import ServiceForm, { type ServiceFormData } from '../../../components/ServiceForm';
 import { ChevronRight, Trash2, Loader2, Search } from 'lucide-react';
+import { getService, deleteService } from '@/services/services.service';
+import { triggerRevalidate } from '@/lib/revalidate';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -16,7 +16,7 @@ interface PageProps {
 export default function EditServicePage({ params }: PageProps) {
   const { id } = use(params);
   const router = useRouter();
-  const [service, setService]         = useState<ServiceData | null>(null);
+  const [service, setService]         = useState<ServiceFormData | null>(null);
   const [loading, setLoading]         = useState(true);
   const [notFound, setNotFound]       = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -25,9 +25,9 @@ export default function EditServicePage({ params }: PageProps) {
   useEffect(() => {
     async function fetchService() {
       try {
-        const snap = await getDoc(doc(db, 'services', id));
-        if (!snap.exists()) { setNotFound(true); return; }
-        setService({ id: snap.id, ...snap.data() } as ServiceData);
+        const data = await getService(id);
+        if (!data) { setNotFound(true); return; }
+        setService(data);
       } catch {
         setNotFound(true);
       } finally {
@@ -40,7 +40,8 @@ export default function EditServicePage({ params }: PageProps) {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await deleteDoc(doc(db, 'services', id));
+      await deleteService(id);
+      await triggerRevalidate([{ path: '/' }, { path: '/services' }]);
       router.replace('/admin/services');
     } catch {
       setDeleting(false);

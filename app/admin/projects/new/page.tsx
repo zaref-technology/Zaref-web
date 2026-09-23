@@ -4,7 +4,7 @@ import { ChevronRight } from 'lucide-react';
 
 export default function NewProjectPage() {
   return (
-    <div style={{ maxWidth: '680px', width: '100%' }}>
+    <div style={{ maxWidth: '860px', width: '100%' }}>
       {/* Breadcrumb */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '1.5rem', fontSize: '0.875rem', color: 'var(--muted)' }}>
         <Link href="/admin/projects" style={{ color: 'var(--primary-light)', textDecoration: 'none', fontWeight: 600 }}>Projects</Link>

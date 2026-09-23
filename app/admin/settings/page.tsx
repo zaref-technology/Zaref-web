@@ -1,36 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getSiteSettings, saveSiteSettings, SiteSettings } from '@/lib/siteSettings';
+import { getSiteSettings, saveSiteSettings } from '@/services/settings.service';
+import { triggerRevalidate } from '@/lib/revalidate';
+import type { SiteSettings } from '@/types/settings';
 import {
   Mail, Phone, MessageCircle, MapPin, Globe2,
-  CheckCircle, AlertTriangle, Loader2, Save, Type, Tag, ExternalLink,
+  CheckCircle, AlertTriangle, Loader2, Save, Type, Tag,
 } from 'lucide-react';
-import {
-  FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaFacebook, FaYoutube,
-} from 'react-icons/fa6';
-
-type SocialEntry = {
-  key: keyof SiteSettings;
-  label: string;
-  placeholder: string;
-};
-
-const SOCIAL_ENTRIES: SocialEntry[] = [
-  { key: 'github',    label: 'GitHub URL',    placeholder: 'https://github.com/...'           },
-  { key: 'linkedin',  label: 'LinkedIn URL',  placeholder: 'https://linkedin.com/in/...'      },
-  { key: 'twitter',   label: 'Twitter / X',   placeholder: 'https://twitter.com/...'          },
-  { key: 'instagram', label: 'Instagram URL', placeholder: 'https://instagram.com/...'        },
-  { key: 'facebook',  label: 'Facebook URL',  placeholder: 'https://facebook.com/...'         },
-  { key: 'youtube',   label: 'YouTube URL',   placeholder: 'https://youtube.com/@channel'     },
-];
+import { SOCIAL_PLATFORMS } from '@/constants/social';
+import type { IconComponent } from '@/constants/service';
 
 type Field = {
   key: keyof SiteSettings;
   label: string;
   placeholder: string;
-  icon: React.ComponentType<{ size?: number; color?: string }>;
-  type?: string;
+  icon: IconComponent;
 };
 
 const SECTIONS: { title: string; fields: Field[] }[] = [
@@ -38,13 +23,13 @@ const SECTIONS: { title: string; fields: Field[] }[] = [
     title: 'Branding',
     fields: [
       { key: 'siteName', label: 'Site Name', placeholder: 'Zaref', icon: Type },
-      { key: 'tagline',  label: 'Tagline',   placeholder: 'Building digital experiences that matter.', icon: Tag },
+      { key: 'tagline',  label: 'Tagline',   placeholder: 'Technology built to move forward.', icon: Tag },
     ],
   },
   {
     title: 'Contact Information',
     fields: [
-      { key: 'email',    label: 'Email Address', placeholder: 'hello@zaref.dev',        icon: Mail         },
+      { key: 'email',    label: 'Email Address', placeholder: 'hello@zaref.in',          icon: Mail         },
       { key: 'phone',    label: 'Phone Number',  placeholder: '+1 234 567 8900',         icon: Phone        },
       { key: 'whatsapp', label: 'WhatsApp',      placeholder: '+1 234 567 8900',         icon: MessageCircle},
       { key: 'location', label: 'Location',      placeholder: 'Remote — Worldwide',      icon: MapPin       },
@@ -53,14 +38,9 @@ const SECTIONS: { title: string; fields: Field[] }[] = [
   },
   {
     title: 'Social Links',
-    fields: [
-      { key: 'github',    label: 'GitHub URL',    placeholder: 'https://github.com/...',           icon: FaGithub    },
-      { key: 'linkedin',  label: 'LinkedIn URL',  placeholder: 'https://linkedin.com/in/...',      icon: FaLinkedin  },
-      { key: 'twitter',   label: 'Twitter / X',   placeholder: 'https://twitter.com/...',          icon: FaTwitter   },
-      { key: 'instagram', label: 'Instagram URL', placeholder: 'https://instagram.com/...',        icon: FaInstagram },
-      { key: 'facebook',  label: 'Facebook URL',  placeholder: 'https://facebook.com/...',         icon: FaFacebook  },
-      { key: 'youtube',   label: 'YouTube URL',   placeholder: 'https://youtube.com/@channel',     icon: FaYoutube   },
-    ],
+    fields: SOCIAL_PLATFORMS.map(({ key, label, placeholder, icon }) => ({
+      key, label: `${label} URL`, placeholder, icon: icon as unknown as IconComponent,
+    })),
   },
 ];
 
@@ -87,6 +67,8 @@ export default function SiteSettingsPage() {
     setSuccess(false);
     try {
       await saveSiteSettings(form);
+      // Settings feed the Footer on every page (via the root layout) plus the Contact page's info panel.
+      await triggerRevalidate([{ path: '/', type: 'layout' }, { path: '/contact' }]);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3500);
     } catch (err) {

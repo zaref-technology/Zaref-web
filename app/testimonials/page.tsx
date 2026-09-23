@@ -1,141 +1,115 @@
-'use client';
+import type { Metadata } from 'next';
+import Image from 'next/image';
+import { ArrowRight, Quote, Star } from 'lucide-react';
+import { listTestimonials } from '@/services/testimonials.service';
+import { TESTIMONIAL_AVATAR_GRADIENTS, initialsFromName } from '@/constants/testimonial';
+import { Container } from '@/components/ui/Container';
+import { Section } from '@/components/ui/Section';
+import { Badge } from '@/components/ui/Badge';
+import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { JsonLd } from '@/components/JsonLd';
+import { breadcrumbJsonLd } from '@/lib/structured-data';
+import { DEFAULT_OG_IMAGES } from '@/constants/site';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Star, Quote, ArrowRight } from 'lucide-react';
+const title = 'Testimonials';
+const description = 'What clients say about working with Zaref.';
 
-interface Testimonial {
-  id: string;
-  name: string;
-  role: string;
-  company: string;
-  quote: string;
-  rating: number;
-  avatar: string;
-  order: number;
-}
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: { canonical: '/testimonials' },
+  openGraph: { title, description, url: '/testimonials', images: DEFAULT_OG_IMAGES },
+  twitter: { title, description, images: DEFAULT_OG_IMAGES },
+};
 
-const initials = (name: string) =>
-  name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+export const revalidate = 300;
 
-const GRADIENT_COLORS = [
-  'linear-gradient(135deg, #2563eb, #7c3aed)',
-  'linear-gradient(135deg, #059669, #0891b2)',
-  'linear-gradient(135deg, #d97706, #ea580c)',
-  'linear-gradient(135deg, #db2777, #7c3aed)',
-];
-
-export default function TestimonialsPage() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [loading, setLoading]           = useState(true);
-
-  useEffect(() => {
-    async function fetch() {
-      try {
-        const snap = await getDocs(query(collection(db, 'testimonials'), orderBy('order', 'asc')));
-        setTestimonials(snap.docs.map(d => ({ id: d.id, ...d.data() } as Testimonial)));
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetch();
-  }, []);
+export default async function TestimonialsPage() {
+  const testimonials = await listTestimonials();
 
   return (
-    <div style={{ paddingTop: '70px' }}>
+    <div className="pt-[var(--header-height)]">
+      <JsonLd data={breadcrumbJsonLd([{ name: 'Home', path: '/' }, { name: 'Testimonials', path: '/testimonials' }])} />
       {/* Hero */}
-      <section style={{ position: 'relative', padding: '6rem 0 5rem', overflow: 'hidden', background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
-        <div className="glow-blob" style={{ width: '500px', height: '500px', background: 'var(--primary)', top: '-200px', left: '-100px' }} />
-        <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <div className="badge" style={{ margin: '0 auto 1rem' }}>Social Proof</div>
-          <h1 className="section-title" style={{ margin: '0 auto 1rem' }}>What Clients Say</h1>
-          <p className="section-subtitle" style={{ margin: '0 auto 2rem' }}>
-            Real feedback from real people who trusted us with their projects.
-          </p>
-          <Link href="/contact" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-            Work With Us <ArrowRight size={16} />
-          </Link>
-        </div>
+      <section className="relative overflow-hidden border-b border-border bg-surface pb-16 pt-10 md:pb-20 md:pt-14">
+        <Container>
+          <div className="relative z-[1] text-center">
+            <Badge className="mx-auto">Social Proof</Badge>
+            <h1 className="text-[clamp(2rem,4vw,3rem)] font-extrabold leading-[1.1] text-foreground">What Clients Say</h1>
+            <p className="mx-auto mt-4 mb-8 max-w-[600px] text-lg text-muted">
+              Real feedback from real people who trusted us with their projects.
+            </p>
+            <Button href="/contact">
+              Work With Us <ArrowRight size={16} />
+            </Button>
+          </div>
+        </Container>
       </section>
 
       {/* Grid */}
-      <section className="section">
-        <div className="container">
-          {loading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-              {[1,2,3,4,5,6].map(i => (
-                <div key={i} className="card" style={{ height: '220px', animation: 'pulse 1.5s ease-in-out infinite' }} />
-              ))}
-            </div>
-          ) : testimonials.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '5rem 1rem' }}>
-              <Quote size={48} style={{ margin: '0 auto 1rem', display: 'block', opacity: 0.3, color: 'var(--muted)' }} />
-              <h2 style={{ fontWeight: 700, color: 'var(--foreground)', marginBottom: '0.5rem' }}>No testimonials yet</h2>
-              <p style={{ color: 'var(--muted)' }}>Check back soon!</p>
+      <Section>
+        <Container>
+          {testimonials.length === 0 ? (
+            <div className="py-20 text-center">
+              <Quote size={48} className="mx-auto mb-4 text-muted opacity-30" />
+              <h2 className="mb-2 font-bold text-foreground">No testimonials yet</h2>
+              <p className="text-muted">Check back soon!</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
+            <div className="grid grid-cols-1 gap-6 [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]">
               {testimonials.map((t, idx) => (
-                <div key={t.id} className="card" style={{ padding: '1.75rem', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                  {/* Giant quote mark */}
-                  <Quote size={40} style={{ position: 'absolute', top: '1rem', right: '1.25rem', opacity: 0.06, color: 'var(--foreground)' }} />
+                <Card key={t.id} className="relative flex flex-col overflow-hidden">
+                  <Quote size={40} className="absolute right-5 top-4 text-foreground opacity-[0.06]" />
 
-                  {/* Stars */}
-                  <div style={{ display: 'flex', gap: '3px', marginBottom: '1rem' }}>
-                    {[1,2,3,4,5].map(i => (
+                  <div className="mb-4 flex gap-[3px]">
+                    {[1, 2, 3, 4, 5].map(i => (
                       <Star key={i} size={15} fill={i <= t.rating ? '#f59e0b' : 'none'} color={i <= t.rating ? '#f59e0b' : 'var(--border)'} />
                     ))}
                   </div>
 
-                  {/* Quote */}
-                  <p style={{ fontSize: '0.95rem', color: 'var(--muted)', fontStyle: 'italic', lineHeight: 1.75, flex: 1, margin: '0 0 1.5rem' }}>
+                  <p className="mb-6 flex-1 text-[0.95rem] italic leading-[1.75] text-muted">
                     &ldquo;{t.quote}&rdquo;
                   </p>
 
-                  {/* Author */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                    <div style={{
-                      width: '44px', height: '44px', borderRadius: '50%', flexShrink: 0,
-                      background: t.avatar ? 'transparent' : GRADIENT_COLORS[idx % GRADIENT_COLORS.length],
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      overflow: 'hidden', fontSize: '0.85rem', fontWeight: 700, color: '#fff',
-                    }}>
+                  <div className="flex items-center gap-3.5">
+                    <div
+                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-bold text-white"
+                      style={{ background: t.avatar ? 'transparent' : TESTIMONIAL_AVATAR_GRADIENTS[idx % TESTIMONIAL_AVATAR_GRADIENTS.length] }}
+                    >
                       {t.avatar
-                        ? <img src={t.avatar} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : initials(t.name)
+                        ? <Image src={t.avatar} alt={t.name} width={44} height={44} className="h-full w-full object-cover" />
+                        : initialsFromName(t.name)
                       }
                     </div>
                     <div>
-                      <div style={{ fontWeight: 700, color: 'var(--foreground)', fontSize: '0.95rem' }}>{t.name}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                      <div className="text-[0.95rem] font-bold text-foreground">{t.name}</div>
+                      <div className="text-[0.8rem] text-muted">
                         {[t.role, t.company].filter(Boolean).join(' · ')}
                       </div>
                     </div>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}
-        </div>
-      </section>
+        </Container>
+      </Section>
 
       {/* CTA */}
-      <section style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '5rem 0' }}>
-        <div className="container" style={{ textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 800, marginBottom: '1rem', color: 'var(--foreground)' }}>
-            Ready to be the next <span style={{ color: 'var(--primary-light)' }}>success story?</span>
-          </h2>
-          <p style={{ color: 'var(--muted)', marginBottom: '2rem', fontSize: '1.05rem' }}>Let&apos;s build something great together.</p>
-          <Link href="/contact" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-            Start a Project <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
-      <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
+      <Section className="border-t border-border bg-surface">
+        <Container>
+          <div className="text-center">
+            <h2 className="mb-4 text-[clamp(1.8rem,4vw,3rem)] font-extrabold text-foreground">
+              Have a software challenge <span className="text-primary">worth solving?</span>
+            </h2>
+            <p className="mb-8 text-[1.05rem] text-muted">Let&apos;s build something great together.</p>
+            <Button href="/contact">
+              Discuss Your Project <ArrowRight size={16} />
+            </Button>
+          </div>
+        </Container>
+      </Section>
     </div>
   );
 }
