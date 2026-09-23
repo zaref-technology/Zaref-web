@@ -7,7 +7,6 @@ import ProjectsSection from '@/components/ProjectsSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import ApproachSection from '@/components/ApproachSection';
 import PartnershipSection from '@/components/PartnershipSection';
-import AboutSection from '@/components/AboutSection';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
 
@@ -32,8 +31,6 @@ export default function Home() {
       <ApproachSection />
 
       <PartnershipSection />
-
-      <AboutSection />
 
       {/* Testimonials — live from Firestore, adaptive layout */}
       <TestimonialsSection />
