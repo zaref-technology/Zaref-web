@@ -1,7 +1,7 @@
 import { SITE_URL, SITE_NAME } from '@/constants/site';
 import { SOCIAL_PLATFORMS } from '@/constants/social';
 import type { SiteSettings } from '@/types/settings';
-import type { Capability } from '@/constants/capabilities';
+import { getCapabilityHref, type Capability } from '@/constants/capabilities';
 
 /** Stable entity identifiers — every other JSON-LD node references Zaref by these, so there is
  * exactly one Organization and one WebSite entity across the whole site. */
@@ -40,7 +40,8 @@ export function siteJsonLd(settings: Partial<SiteSettings>, description: string)
         '@id': ORGANIZATION_ID,
         name: SITE_NAME,
         url: SITE_URL,
-        logo: `${SITE_URL}/zaref-icon.png`,
+        // Same approved mark as zaref-icon.png, at 180x180 (~27 KB vs ~1 MB); served by app/apple-icon.png.
+        logo: `${SITE_URL}/apple-icon.png`,
         description,
         ...(sameAs.length > 0 ? { sameAs } : {}),
       },
@@ -70,20 +71,39 @@ export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
   };
 }
 
-/** One Service per visible capability on /services — name and description are the exact visible
- * copy. No prices, ratings, offers, availability or service areas (none are real data). */
-export function servicesJsonLd(capabilities: Pick<Capability, 'slug' | 'title' | 'longDescription'>[]) {
+type ServiceCapability = Pick<Capability, 'slug' | 'title' | 'longDescription' | 'pagePath'>;
+
+/** A capability with a dedicated page is one entity identified by that page; the others by their
+ * /services anchor. */
+function serviceEntityId(c: ServiceCapability): string {
+  return c.pagePath ? `${SITE_URL}${c.pagePath}#service` : `${SITE_URL}${getCapabilityHref(c)}`;
+}
+
+/** Full Service entity — name and description are the exact visible copy. No prices, ratings,
+ * offers, availability or service areas (none are real data). */
+function serviceNode(c: ServiceCapability) {
+  return {
+    '@type': 'Service',
+    '@id': serviceEntityId(c),
+    name: c.title,
+    description: c.longDescription,
+    url: `${SITE_URL}${getCapabilityHref(c)}`,
+    provider: { '@id': ORGANIZATION_ID },
+  };
+}
+
+/** Services overview graph. A capability with a dedicated page is only referenced here by its
+ * `@id` (its page defines it), so there is never a second, conflicting entity for it. */
+export function servicesJsonLd(capabilities: ServiceCapability[]) {
   return {
     '@context': 'https://schema.org',
-    '@graph': capabilities.map(c => ({
-      '@type': 'Service',
-      '@id': `${SITE_URL}/services#${c.slug}`,
-      name: c.title,
-      description: c.longDescription,
-      url: `${SITE_URL}/services#${c.slug}`,
-      provider: { '@id': ORGANIZATION_ID },
-    })),
+    '@graph': capabilities.map(c => (c.pagePath ? { '@id': serviceEntityId(c) } : serviceNode(c))),
   };
+}
+
+/** The Service entity for a capability's own dedicated page. */
+export function serviceJsonLd(capability: ServiceCapability) {
+  return { '@context': 'https://schema.org', ...serviceNode(capability) };
 }
 
 /** A case study stays a CreativeWork (screenshots + description of delivered work — not a

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { CAPABILITIES } from '@/constants/capabilities';
+import { CAPABILITIES, getCapabilityHref } from '@/constants/capabilities';
 import { Container } from '@/components/ui/Container';
 import { Section } from '@/components/ui/Section';
 import { Badge } from '@/components/ui/Badge';
@@ -41,7 +41,7 @@ export default function ServicesSection() {
                   <div className="mb-1.5 flex items-center gap-2.5">
                     <span className="text-xs font-bold text-muted">{cap.n}</span>
                     <h3 className="text-[1.05rem] font-bold text-foreground">
-                      <Link href={`/services#${cap.slug}`} className="transition-colors hover:text-primary">
+                      <Link href={getCapabilityHref(cap)} className="transition-colors hover:text-primary">
                         {cap.title}
                       </Link>
                     </h3>

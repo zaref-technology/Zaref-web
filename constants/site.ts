@@ -1,4 +1,4 @@
-export const SITE_URL = 'https://zaref.in';
+export const SITE_URL = 'https://www.zaref.in';
 /** Zaref is the master brand — avoid appending "Technology" throughout the site. */
 export const SITE_NAME = 'Zaref';
 

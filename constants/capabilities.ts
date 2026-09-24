@@ -13,6 +13,15 @@ export interface Capability {
   useCases: string[];
   icon: IconComponent;
   color: string;
+  /** Dedicated indexable page for this capability, when one exists. Capabilities without one are
+   * addressed as `/services#slug`. Always link through `getCapabilityHref`, never by hand. */
+  pagePath?: string;
+}
+
+/** The single place that decides where a capability link goes: its dedicated page if it has one,
+ * otherwise its section anchor on /services. */
+export function getCapabilityHref(cap: Pick<Capability, 'slug' | 'pagePath'>): string {
+  return cap.pagePath ?? `/services#${cap.slug}`;
 }
 
 /**
@@ -32,6 +41,7 @@ export const CAPABILITIES: Capability[] = [
     useCases: ['Operations software', 'Workflow systems', 'Management platforms', 'Internal applications', 'Custom business tools', 'Process digitization'],
     icon: Code2,
     color: '#2563eb',
+    pagePath: '/services/custom-software-development',
   },
   {
     n: '02',
@@ -62,6 +72,7 @@ export const CAPABILITIES: Capability[] = [
     useCases: ['CRM & lead management', 'Operations management', 'Inventory & order management', 'Admin platforms', 'Booking & scheduling', 'Reporting dashboards'],
     icon: Building2,
     color: '#d97706',
+    pagePath: '/services/business-systems',
   },
   {
     n: '05',

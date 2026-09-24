@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { getSiteSettings } from '@/services/settings.service';
-import { CAPABILITIES } from '@/constants/capabilities';
+import { CAPABILITIES, getCapabilityHref } from '@/constants/capabilities';
 import { SOCIAL_PLATFORMS } from '@/constants/social';
 import { ROUTES } from '@/constants/routes';
 
@@ -31,9 +31,9 @@ export default async function Footer() {
           {/* Brand column */}
           <div>
             <Link href="/" className="mb-3.5 inline-flex items-center">
-              <span className="relative inline-block h-7 w-auto" style={{ aspectRatio: '1724 / 369' }}>
-                <Image src="/zaref-logo-full-light.png" alt={settings.siteName || 'Zaref'} fill sizes="120px" className="object-contain object-left dark:hidden" />
-                <Image src="/zaref-logo-full-dark.png" alt={settings.siteName || 'Zaref'} fill sizes="120px" className="hidden object-contain object-left dark:block" />
+              <span className="relative inline-block h-7 w-[131px]" style={{ aspectRatio: '1724 / 369' }}>
+                <Image src="/zaref-logo-full-light.png" alt={settings.siteName || 'Zaref'} fill unoptimized sizes="120px" className="object-contain object-left dark:hidden" />
+                <Image src="/zaref-logo-full-dark.png" alt={settings.siteName || 'Zaref'} fill unoptimized sizes="120px" className="hidden object-contain object-left dark:block" />
               </span>
             </Link>
             <p className="mb-5 max-w-[220px] text-[0.865rem] leading-[1.7] text-muted">
@@ -72,7 +72,7 @@ export default async function Footer() {
             <Link href={ROUTES.services} className={`${colHeading} inline-block transition-colors hover:text-primary`}>Services</Link>
             <div className="flex flex-col gap-2.5">
               {CAPABILITIES.map(cap => (
-                <Link key={cap.n} href={`${ROUTES.services}#${cap.slug}`} className={footerLink}>{cap.title}</Link>
+                <Link key={cap.n} href={getCapabilityHref(cap)} className={footerLink}>{cap.title}</Link>
               ))}
             </div>
           </div>

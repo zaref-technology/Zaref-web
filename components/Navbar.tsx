@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/app/context/ThemeContext';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import { Sun, Moon, Menu, X } from 'lucide-react';
 import { NAV_LINKS } from '@/constants/nav';
 import { ROUTES } from '@/constants/routes';
@@ -15,16 +15,18 @@ import { isNavLinkActive } from '@/lib/nav';
 const iconBtn =
   'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted transition-colors hover:bg-foreground/[0.05] hover:text-foreground';
 
+const subscribeNoop = () => () => {};
+
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  // false on the server and during hydration, true afterwards — same timing as the former
+  // mount effect, without a setState-in-effect.
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
   const [hash, setHash] = useState('');
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => { setMounted(true); }, []);
 
   // Escape closes the mobile menu and returns focus to the button that opened it.
   useEffect(() => {
@@ -79,11 +81,11 @@ export default function Navbar() {
         {/* Logo — official ZAREF lockup asset, used as-is (no reconstruction), theme-swapped */}
         <Link href="/" className="flex flex-shrink-0 items-center">
           <span
-            className="relative inline-block h-7 w-auto md:h-9"
+            className="relative inline-block h-7 w-[131px] md:h-9 md:w-[168px]"
             style={{ aspectRatio: '1724 / 369' }}
           >
-            <Image src="/zaref-logo-full-light.png" alt="Zaref" fill sizes="200px" className="object-contain object-left dark:hidden" priority />
-            <Image src="/zaref-logo-full-dark.png" alt="Zaref" fill sizes="200px" className="hidden object-contain object-left dark:block" priority />
+            <Image src="/zaref-logo-full-light.png" alt="Zaref" fill unoptimized sizes="200px" className="object-contain object-left dark:hidden" priority />
+            <Image src="/zaref-logo-full-dark.png" alt="Zaref" fill unoptimized sizes="200px" className="hidden object-contain object-left dark:block" priority />
           </span>
         </Link>
 
