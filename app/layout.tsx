@@ -6,6 +6,8 @@ import ClientLayout from "@/components/ClientLayout";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SITE_URL, SITE_NAME } from "@/constants/site";
+import { getSiteSettings } from "@/services/settings.service";
+import { siteJsonLd } from "@/lib/structured-data";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,9 +30,6 @@ export const metadata: Metadata = {
     template: "%s — Zaref",
   },
   description: homeDescription,
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     url: SITE_URL,
@@ -51,27 +50,10 @@ export const metadata: Metadata = {
   },
 };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": `${SITE_URL}/#organization`,
-      name: SITE_NAME,
-      url: SITE_URL,
-      logo: `${SITE_URL}/zaref-icon.png`,
-    },
-    {
-      "@type": "WebSite",
-      "@id": `${SITE_URL}/#website`,
-      url: SITE_URL,
-      name: SITE_NAME,
-      publisher: { "@id": `${SITE_URL}/#organization` },
-    },
-  ],
-};
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Real Site Settings feed the Organization entity (sameAs profiles). Never invented values.
+  const jsonLd = siteJsonLd(await getSiteSettings(), homeDescription);
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"

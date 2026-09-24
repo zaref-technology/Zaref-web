@@ -25,6 +25,14 @@
   --foreground: #101828;
   --muted: #667085;
   --nav-bg: rgba(250, 250, 249, 0.85);
+
+  /* Accessible variants (WCAG 1.4.3 / 1.4.11). Decorative dividers keep --border; anything a
+   * user must perceive to operate a control uses --control-border (>= 3:1 against the field
+   * fill and the surrounding surfaces). --danger is >= 4.5:1 for error text. --primary-text is
+   * the accent colour for TEXT — equal to --primary in light mode. */
+  --control-border: #7d8797;
+  --danger: #b42318;
+  --primary-text: #175cd3;
 }
 
 [data-theme="dark"] {
@@ -35,6 +43,17 @@
   --foreground: #f8fafc;
   --muted: #98a2b3;
   --nav-bg: rgba(11, 16, 24, 0.85);
+
+  --control-border: #667085;
+  --danger: #f97066;
+  /* Accent for text on dark surfaces: #175cd3 is only ~3:1 there. This lighter tint of the same
+   * brand blue is >= 4.8:1 on every dark surface. Backgrounds/buttons keep --primary. */
+  --primary-text: #3b86f8;
+}
+
+[data-theme="dark"] .text-primary,
+[data-theme="dark"] .hover\:text-primary:hover {
+  color: var(--primary-text);
 }
 
 /* Expose design tokens as Tailwind utilities: bg-primary, text-muted, border-border, etc. */
@@ -45,6 +64,8 @@
   --color-surface-2: var(--surface-2);
   --color-border: var(--border);
   --color-muted: var(--muted);
+  --color-control-border: var(--control-border);
+  --color-danger: var(--danger);
   --color-primary: var(--primary);
   --color-primary-light: var(--primary-light);
   --color-primary-dark: var(--primary-dark);
@@ -63,7 +84,15 @@
 
 /* ─── Base Styles ──────────────────────────────────────── */
 html {
-  scroll-behavior: smooth;
+  /* Keeps keyboard-focused and anchor targets from landing under the fixed header (WCAG 2.4.11) */
+  scroll-padding-top: var(--header-height);
+}
+
+/* Smooth scrolling only for users who haven't asked for reduced motion */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {

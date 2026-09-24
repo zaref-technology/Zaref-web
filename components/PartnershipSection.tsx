@@ -54,7 +54,7 @@ export default function PartnershipSection() {
           </p>
           <div className="mt-7 flex justify-center">
             <Button href="/contact">
-              Discuss Your Requirements <ArrowRight size={16} />
+              Discuss Your Project <ArrowRight size={16} />
             </Button>
           </div>
         </div>

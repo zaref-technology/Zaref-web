@@ -8,14 +8,23 @@ export interface RevalidateTarget {
  * Tells the server to drop its cached HTML for the given paths so the next visit picks up
  * fresh data. Called from admin mutation handlers after a Firestore write — the admin panel
  * writes directly to Firestore from the browser, so this is the only way the public
- * (statically generated) pages find out something changed. Fire-and-forget: a failure here
- * should never block the admin UX, the site just falls back to the timed revalidate window.
+ * (statically generated) pages find out something changed. The request carries the signed-in
+ * admin's Firebase ID token; the endpoint rejects anything unauthenticated. Fire-and-forget: a
+ * failure here should never block the admin UX, the site just falls back to the timed
+ * revalidate window.
  */
 export async function triggerRevalidate(paths: RevalidateTarget[]): Promise<void> {
   try {
+    // Loaded lazily — only admin code calls this, and it keeps firebase/auth out of any bundle
+    // that merely imports the type.
+    const { auth } = await import('@/lib/firebase-auth');
+    const token = await auth.currentUser?.getIdToken();
     await fetch('/api/revalidate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({ paths }),
     });
   } catch (err) {

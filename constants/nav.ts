@@ -3,11 +3,10 @@ import { ROUTES } from './routes';
 export interface NavLink {
   href: string;
   label: string;
-  /** Path used for active-state matching. `null` opts a link out of ever showing active —
-   * used by "Solutions", which shares the `/services` route with the "Services" link itself;
-   * giving both an active state at once would be a confusing double-highlight, and hash-aware
-   * scroll-spy would be brittle, so Services owns the active state on that route and Solutions
-   * stays a plain navigation shortcut. Omit to default to `href`. */
+  /** Path (optionally "path#hash") used for active-state matching. `null` opts a link out of
+   * ever showing active. Omit to default to `href`. "Services" and "Solutions" share the
+   * `/services` base path but target different hashes — `isNavLinkActive` (lib/nav.ts) resolves
+   * which one should highlight from the current URL hash, so only one is ever active at once. */
   activePath?: string | null;
 }
 
@@ -15,7 +14,7 @@ export interface NavLink {
  * Project") covers that, the page itself still exists at /contact. */
 export const NAV_LINKS: NavLink[] = [
   { href: ROUTES.services, label: 'Services', activePath: ROUTES.services },
-  { href: ROUTES.solutions, label: 'Solutions', activePath: null },
+  { href: ROUTES.solutions, label: 'Solutions', activePath: ROUTES.solutions },
   { href: ROUTES.work, label: 'Work', activePath: ROUTES.work },
   { href: ROUTES.company, label: 'Company', activePath: ROUTES.company },
 ];

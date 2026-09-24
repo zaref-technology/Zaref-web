@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { SiteSettings } from '@/types/settings';
@@ -7,7 +8,8 @@ const DEFAULTS: SiteSettings = {
   phone: '',
   whatsapp: '',
   address: '',
-  location: 'Remote — Worldwide',
+  // Deliberately empty: when no location is stored we omit it rather than invent geographic reach.
+  location: '',
   github: '',
   linkedin: '',
   twitter: '',
@@ -20,7 +22,9 @@ const DEFAULTS: SiteSettings = {
 
 const REF = () => doc(db, 'settings', 'site');
 
-export async function getSiteSettings(): Promise<SiteSettings> {
+// cache(): the layout (structured data), Footer and pages all read settings during one render —
+// this collapses them into a single Firestore read per request.
+export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   try {
     const snap = await getDoc(REF());
     if (!snap.exists()) return DEFAULTS;
@@ -28,7 +32,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   } catch {
     return DEFAULTS;
   }
-}
+});
 
 export async function saveSiteSettings(data: SiteSettings): Promise<void> {
   await setDoc(REF(), { ...data, updatedAt: serverTimestamp() }, { merge: true });

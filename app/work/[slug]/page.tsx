@@ -5,6 +5,8 @@ import {
   ArrowLeft, ArrowRight, Globe, GitFork, Play,
 } from 'lucide-react';
 import { getProjectBySlug, listProjects } from '@/services/projects.service';
+import { listTestimonialsForProject } from '@/services/testimonials.service';
+import { ClientQuote } from '@/components/ClientQuote';
 import { CAPABILITIES } from '@/constants/capabilities';
 import { ROUTES } from '@/constants/routes';
 import { Container } from '@/components/ui/Container';
@@ -47,10 +49,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-/** capabilityIds → display titles, via the same source of truth as the Services page. */
-function capabilityLabels(project: Project): string[] {
+/** capabilityIds → capabilities (title + anchor slug), via the same source of truth as the
+ * Services page. Unknown IDs are dropped, so a link can never point at a missing section. */
+function projectCapabilities(project: Project) {
   if (!project.capabilityIds || project.capabilityIds.length === 0) return [];
-  return CAPABILITIES.filter(c => project.capabilityIds!.includes(c.slug)).map(c => c.title);
+  return CAPABILITIES.filter(c => project.capabilityIds!.includes(c.slug));
 }
 
 /** New records use `technologies: string[]`; legacy records store a comma-separated `tags`
@@ -69,9 +72,13 @@ export default async function ProjectDetailPage({ params }: PageProps) {
 
   if (!project) notFound();
 
+  // Only testimonials explicitly linked via testimonial.projectId === project.id — never matched
+  // by client name, text or any other heuristic.
+  const clientQuotes = (await listTestimonialsForProject(project.id)).slice(0, 2);
+
   const path = `${ROUTES.work}/${project.slug || project.id}`;
   const embedUrl = getYouTubeEmbedUrl(project.youtubeUrl ?? '');
-  const capabilities = capabilityLabels(project);
+  const capabilities = projectCapabilities(project);
   const technologies = technologyList(project);
   // `solution` is the canonical field; `approach` is its deprecated legacy name.
   const solutionText = project.solution || project.approach;
@@ -92,7 +99,15 @@ export default async function ProjectDetailPage({ params }: PageProps) {
   return (
     <div className="pt-[var(--header-height)]">
       <JsonLd data={breadcrumbJsonLd([{ name: 'Home', path: '/' }, { name: 'Work', path: ROUTES.work }, { name: project.title, path }])} />
-      <JsonLd data={projectJsonLd({ path, title: project.title, description: project.description, images: project.images ?? [], category: project.category })} />
+      <JsonLd data={projectJsonLd({
+        path,
+        title: project.title,
+        description: project.description,
+        images: project.images ?? [],
+        category: project.category,
+        keywords: [...capabilities.map(c => c.title), ...technologies],
+        dateModified: project.updatedAt?.toDate().toISOString(),
+      })} />
 
       {/* Back bar */}
       <Container className="py-4">
@@ -116,7 +131,14 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
               <span className="font-semibold text-foreground">{project.category}</span>
               {capabilities.length > 0 && (
-                <span className="text-muted">{capabilities.join(' · ')}</span>
+                <span className="text-muted">
+                  {capabilities.map((c, i) => (
+                    <span key={c.slug}>
+                      {i > 0 && ' · '}
+                      <Link href={`${ROUTES.services}#${c.slug}`} className="underline-offset-4 transition-colors hover:text-foreground hover:underline">{c.title}</Link>
+                    </span>
+                  ))}
+                </span>
               )}
               {project.solutionType && (
                 <span className="text-muted">{project.solutionType}</span>
@@ -259,6 +281,28 @@ export default async function ProjectDetailPage({ params }: PageProps) {
             <Container>
               <h2 className="mb-4 text-[1.4rem] font-bold text-foreground">Outcome</h2>
               <p className="max-w-[680px] whitespace-pre-wrap leading-[1.8] text-muted">{project.outcome}</p>
+            </Container>
+          </section>
+        )}
+
+        {/* ── Client perspective — only when a testimonial is explicitly linked to this project ── */}
+        {clientQuotes.length > 0 && (
+          <section className="border-t border-border py-12">
+            <Container>
+              <h2 className="mb-6 text-[1.4rem] font-bold text-foreground">Client Perspective</h2>
+              <div className={clientQuotes.length > 1 ? 'grid grid-cols-1 gap-10 md:grid-cols-2' : 'max-w-[760px]'}>
+                {clientQuotes.map(t => (
+                  <ClientQuote
+                    key={t.id}
+                    quote={t.quote}
+                    name={t.name}
+                    role={t.role}
+                    company={t.company}
+                    avatar={t.avatar}
+                    size={clientQuotes.length > 1 ? 'md' : 'lg'}
+                  />
+                ))}
+              </div>
             </Container>
           </section>
         )}

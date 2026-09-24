@@ -52,15 +52,17 @@ export async function getProject(id: string): Promise<Project | null> {
 }
 
 /**
- * Canonical public lookup for /work/[slug]. Resolves by the explicit `slug` field — never by
- * deriving one from `title` at request time, which would make URLs unstable. Falls back to
- * treating the param as a raw Firestore document ID only as a migration safety net, for the
- * rare case of a project that predates the slug field and hasn't been backfilled yet.
+ * Canonical PUBLIC lookup for /work/[slug]. Resolves strictly by the explicit `slug` field —
+ * never by deriving one from `title`, and never by Firestore document ID (legacy ID URLs are
+ * redirected to the slug before they reach a page; see next.config.ts and app/portfolio/[id]).
+ * Draft projects resolve to null, exactly like a project that doesn't exist, so an unpublished
+ * project can never render publicly just because its slug is known.
  */
-export async function getProjectBySlug(slugOrId: string): Promise<Project | null> {
-  const snap = await getDocs(query(collection(db, COLLECTION), where('slug', '==', slugOrId)));
-  if (!snap.empty) return { id: snap.docs[0].id, ...snap.docs[0].data() } as Project;
-  return getProject(slugOrId);
+export async function getProjectBySlug(slug: string): Promise<Project | null> {
+  const snap = await getDocs(query(collection(db, COLLECTION), where('slug', '==', slug)));
+  if (snap.empty) return null;
+  const project = { id: snap.docs[0].id, ...snap.docs[0].data() } as Project;
+  return project.status === 'draft' ? null : project;
 }
 
 /** True if `slug` is already used by a different project. Excludes `excludeId` (the project
