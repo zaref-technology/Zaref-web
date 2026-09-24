@@ -7,7 +7,7 @@ import {
 import { getProjectBySlug, listProjects } from '@/services/projects.service';
 import { listTestimonialsForProject } from '@/services/testimonials.service';
 import { ClientQuote } from '@/components/ClientQuote';
-import { CAPABILITIES } from '@/constants/capabilities';
+import { CAPABILITIES, getCapabilityHref } from '@/constants/capabilities';
 import { ROUTES } from '@/constants/routes';
 import { Container } from '@/components/ui/Container';
 import { Button } from '@/components/ui/Button';
@@ -135,7 +135,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
                   {capabilities.map((c, i) => (
                     <span key={c.slug}>
                       {i > 0 && ' · '}
-                      <Link href={`${ROUTES.services}#${c.slug}`} className="underline-offset-4 transition-colors hover:text-foreground hover:underline">{c.title}</Link>
+                      <Link href={getCapabilityHref(c)} className="underline-offset-4 transition-colors hover:text-foreground hover:underline">{c.title}</Link>
                     </span>
                   ))}
                 </span>

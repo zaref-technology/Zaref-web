@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  CheckCircle, AlertTriangle, Loader2, Upload, X, ImagePlus, Plus, ChevronUp, ChevronDown,
+  CheckCircle, AlertTriangle, Loader2, Upload, X, ImagePlus, Plus, ChevronUp, ChevronDown, Info,
 } from 'lucide-react';
 import { uploadMultipleToCloudinary } from '@/lib/cloudinary';
-import { createProject, updateProject, isSlugTaken } from '@/services/projects.service';
+import { createProject, updateProject, isSlugTaken, getNextDisplayOrder } from '@/services/projects.service';
 import { PROJECT_CATEGORIES, PROJECT_ACCENT_COLORS, SOLUTION_TYPES } from '@/constants/project';
 import { CAPABILITIES } from '@/constants/capabilities';
 import { triggerRevalidate } from '@/lib/revalidate';
@@ -187,6 +187,20 @@ export default function ProjectForm({ initialData, mode }: ProjectFormProps) {
   // is what keeps a published project's URL stable when marketing copy changes later.
   const [slugTouched, setSlugTouched] = useState(mode === 'edit' && !!initialData?.slug);
 
+  const [showOrderInfo, setShowOrderInfo] = useState(false);
+
+  // Display Order only applies to featured projects: once Featured is on and no order is set,
+  // default to the next free position among featured projects.
+  useEffect(() => {
+    if (!form.featured || form.displayOrder !== undefined) return;
+    let cancelled = false;
+    getNextDisplayOrder(initialData?.id)
+      .then(n => { if (!cancelled) setForm(prev => prev.featured && prev.displayOrder === undefined ? { ...prev, displayOrder: n } : prev); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.featured]);
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
     setForm(prev => ({ ...prev, title, slug: slugTouched ? prev.slug : slugify(title) }));
@@ -301,8 +315,16 @@ export default function ProjectForm({ initialData, mode }: ProjectFormProps) {
         return;
       }
 
+      // Display order is always a positive whole number; blank/invalid falls back to next free slot.
+      // Only featured projects carry one; non-featured projects have it removed.
+      const entered = Math.floor(Number(form.displayOrder));
+      const displayOrder = !form.featured
+        ? undefined
+        : Number.isFinite(entered) && entered >= 1 ? entered : await getNextDisplayOrder(initialData?.id);
+
       const payload: ProjectFormData = {
         ...form,
+        displayOrder,
         slug,
         features: (form.features ?? []).filter(f => f.title.trim() || f.description.trim()),
         gallery: (form.gallery ?? []).map((g, i) => ({ ...g, order: i })),
@@ -387,18 +409,52 @@ export default function ProjectForm({ initialData, mode }: ProjectFormProps) {
               <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Show on homepage</span>
             </label>
           </div>
-          <div>
-            <label style={labelStyle}>Display Order</label>
+          {form.featured && <div>
+            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              Display Order
+              <span style={{ position: 'relative', display: 'inline-flex' }}>
+                <button
+                  type="button"
+                  aria-label="About Display Order"
+                  aria-expanded={showOrderInfo}
+                  onClick={() => setShowOrderInfo(v => !v)}
+                  onMouseEnter={() => setShowOrderInfo(true)}
+                  onMouseLeave={() => setShowOrderInfo(false)}
+                  onBlur={() => setShowOrderInfo(false)}
+                  style={{ display: 'flex', padding: 0, border: 'none', background: 'none', color: 'var(--muted)', cursor: 'pointer' }}
+                >
+                  <Info size={14} />
+                </button>
+                {showOrderInfo && (
+                  <span
+                    role="tooltip"
+                    style={{
+                      position: 'absolute', top: '1.4rem', left: '-0.5rem', zIndex: 20, width: '240px',
+                      padding: '0.6rem 0.75rem', borderRadius: '8px', background: 'var(--surface-2)',
+                      border: '1px solid var(--border)', boxShadow: '0 6px 20px rgba(0,0,0,0.12)',
+                      fontSize: '0.78rem', fontWeight: 400, lineHeight: 1.5, color: 'var(--foreground)',
+                      textTransform: 'none', letterSpacing: 'normal',
+                    }}
+                  >
+                    Position among featured projects on the homepage. 1 is shown first, then 2, 3 and so on.
+                    It defaults to the next free number (e.g. 2 if one project is already featured). Leave
+                    blank to auto-assign. Only applies to featured projects.
+                  </span>
+                )}
+              </span>
+            </label>
             <input
               type="number"
+              min={1}
+              step={1}
               value={form.displayOrder ?? ''}
               onChange={e => setForm(prev => ({ ...prev, displayOrder: e.target.value === '' ? undefined : Number(e.target.value) }))}
-              placeholder="0"
+              placeholder="1"
               style={inputStyle}
             />
-          </div>
+          </div>}
         </div>
-        <p style={helperStyle}>Featured projects appear first on the homepage, ordered by Display Order (lowest first).</p>
+        <p style={helperStyle}>Featured projects appear first on the homepage. Tick Featured to set their Display Order.</p>
       </div>
 
       {/* ═══ 2. CLASSIFICATION ═══ */}

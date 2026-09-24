@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: '/testimonials' },
+  // Thin while it holds a single testimonial. Follow stays on so link equity still flows. Make it
+  // indexable (drop this) and add it to app/sitemap.ts once it has enough genuine client feedback.
+  robots: { index: false, follow: true },
   openGraph: { title, description, url: '/testimonials', images: DEFAULT_OG_IMAGES },
   twitter: { title, description, images: DEFAULT_OG_IMAGES },
 };

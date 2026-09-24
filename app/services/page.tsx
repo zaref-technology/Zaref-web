@@ -146,6 +146,14 @@ export default async function ServicesPage() {
                         );
                       })()}
 
+                      {cap.pagePath && (
+                        <p className="mt-5">
+                          <Link href={cap.pagePath} className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground transition-colors hover:text-primary">
+                            Explore {cap.title} <ArrowRight size={14} />
+                          </Link>
+                        </p>
+                      )}
+
                       {cap.slug === 'web-applications' && (
                         <p className="mt-5 max-w-[480px] border-l-2 border-border pl-4 text-sm leading-[1.7] text-muted">
                           This also covers <strong className="font-semibold text-foreground">websites &amp; digital commerce</strong> — corporate websites, business websites and commerce experiences — when they&apos;re part of a broader platform. It isn&apos;t Zaref&apos;s primary identity, but it is something we build.

@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: homeTitle,
-    template: "%s — Zaref",
+    template: "%s | Zaref",
   },
   description: homeDescription,
   openGraph: {

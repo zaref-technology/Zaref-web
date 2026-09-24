@@ -1,5 +1,5 @@
 import {
-  collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc,
+  collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, deleteField, doc,
   orderBy, query, where, serverTimestamp, type QueryConstraint,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -72,9 +72,32 @@ export async function isSlugTaken(slug: string, excludeId?: string): Promise<boo
   return snap.docs.some(d => d.id !== excludeId);
 }
 
+/* Firestore rejects `undefined` field values. Optional fields (e.g. an emptied displayOrder) arrive
+   as undefined, so drop them on create and turn them into deleteField() on update. */
+function withoutUndefined<T extends object>(data: T): Partial<T> {
+  return Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
+
+function undefinedToDelete<T extends object>(data: T): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v === undefined ? deleteField() : v]));
+}
+
+/** Next free position among FEATURED projects: 1 for the first, otherwise the highest existing
+ * order + 1 (or the featured count, whichever is larger, so featured projects without a
+ * displayOrder still count). Non-featured projects don't take part in the ordering. */
+export async function getNextDisplayOrder(excludeId?: string): Promise<number> {
+  const snap = await getDocs(query(collection(db, COLLECTION), where('featured', '==', true)));
+  const docs = snap.docs.filter(d => d.id !== excludeId);
+  const highest = docs.reduce((max, d) => {
+    const n = d.data().displayOrder;
+    return typeof n === 'number' && n > max ? n : max;
+  }, 0);
+  return Math.max(highest, docs.length) + 1;
+}
+
 export async function createProject(data: ProjectInput): Promise<string> {
   const ref = await addDoc(collection(db, COLLECTION), {
-    ...data,
+    ...withoutUndefined(data),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -83,7 +106,7 @@ export async function createProject(data: ProjectInput): Promise<string> {
 
 export async function updateProject(id: string, data: ProjectInput): Promise<void> {
   await updateDoc(doc(db, COLLECTION, id), {
-    ...data,
+    ...undefinedToDelete(data),
     updatedAt: serverTimestamp(),
   });
 }
