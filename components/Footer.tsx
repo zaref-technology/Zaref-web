@@ -108,6 +108,9 @@ export default async function Footer() {
           <p className="text-[0.82rem] text-muted">
             © {year} Zaref. All rights reserved.
           </p>
+          <Link href={ROUTES.privacy} className="text-[0.82rem] font-medium text-muted transition-colors hover:text-primary-light">
+            Privacy Policy
+          </Link>
         </div>
       </div>
     </footer>
