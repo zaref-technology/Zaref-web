@@ -5,7 +5,7 @@ import { CAPABILITIES } from '@/constants/capabilities';
 import { listProjects } from '@/services/projects.service';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticRoutes = [ROUTES.home, ROUTES.services, ROUTES.work, ROUTES.company, ROUTES.contact];
+  const staticRoutes = [ROUTES.home, ROUTES.services, ROUTES.work, ROUTES.company, ROUTES.contact, ROUTES.privacy];
 
   // No `lastModified` for static pages: there is no reliable modification timestamp for them,
   // and publishing the current request time would advertise freshness that doesn't exist.

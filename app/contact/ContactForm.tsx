@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { Send, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { submitMessage } from '@/services/messages.service';
 import { CONTACT_PROJECT_TYPES, CONTACT_BUDGET_RANGES } from '@/constants/contact';
+import { ROUTES } from '@/constants/routes';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -237,6 +239,11 @@ export default function ContactForm() {
               </>
             )}
           </Button>
+
+          <p className="text-center text-[0.8rem] text-muted">
+            We use your details only to respond to your enquiry. See our{' '}
+            <Link href={ROUTES.privacy} className="font-semibold text-primary underline-offset-4 hover:underline">Privacy Policy</Link>.
+          </p>
         </form>
       )}
     </Card>
