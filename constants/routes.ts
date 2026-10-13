@@ -12,6 +12,7 @@ export const ROUTES = {
   contact: '/contact',
   testimonials: '/testimonials',
   privacy: '/privacy-policy',
+  terms: '/terms-and-conditions',
 } as const;
 
 /** Canonical project URL. Falls back to the Firestore document ID only for a project that
