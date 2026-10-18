@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/studio-quote",
+      "destination": "https://script.google.com/macros/s/AKfycbwgvCImUfazOvrYytc5EGe8iAk7QGYcnI6r6i9A8-b089inIrWYJ_Tp9ru2f9EAMaev/exec",
+      "permanent": false
+    }
+  ]
+}
