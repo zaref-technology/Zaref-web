@@ -8,7 +8,7 @@ const title = 'Privacy Policy';
 const description = 'How Zaref collects, uses, stores and protects the information you share through this website and its contact form.';
 
 /** Bump whenever the policy text below materially changes. */
-const LAST_UPDATED = '12 October 2026';
+const LAST_UPDATED = '21 October 2026';
 
 export const metadata: Metadata = {
   title,
