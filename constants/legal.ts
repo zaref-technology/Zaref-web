@@ -2,7 +2,7 @@
  * legally responsible for the business, its website and the personal data it collects. Shared by
  * the Privacy Policy and Terms & Conditions pages so the two can never disagree. */
 export const OWNER = {
-  name: 'Sheikh Mohd Tanvir Mohd Latif',
+  name: 'MOHD TANVIR MOHD LATIF SHEIKH',
   phone: '+91 88886 91390',
   phoneHref: 'tel:+918888691390',
   email: 'tanveer15sheikh@gmail.com',

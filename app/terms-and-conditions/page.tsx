@@ -9,7 +9,7 @@ const title = 'Terms & Conditions';
 const description = 'The terms that apply when you use the Zaref website, send us an enquiry or engage us for a software project.';
 
 /** Bump whenever the terms below materially change. */
-const LAST_UPDATED = '13 October 2026';
+const LAST_UPDATED = '21 October 2026';
 
 export const metadata: Metadata = {
   title,
